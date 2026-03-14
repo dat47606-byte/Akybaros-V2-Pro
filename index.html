@@ -1,0 +1,2160 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aky Baro V2 - Máy Chủ Chính Thức</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { 
+            --p: #00ff88; --b: #00d4ff; --g: #ffd700; --d: #ff4757; --w: #ffa502; 
+            --dk: #0a0a0f; --v: #8b5cf6; --r: #ff006e; --prem: #c084fc; --ram: #3b82f6;
+            --success: #2ecc71; --warning: #f39c12; --danger: #e74c3c;
+        }
+        body { font-family: 'Roboto', sans-serif; background: var(--dk); color: #fff; min-height: 100vh; padding-bottom: 80px; overflow-x: hidden; }
+        
+        .bg { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0,255,136,0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0,212,255,0.1) 0%, transparent 50%),
+                linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px), 
+                linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px); 
+            background-size: 100% 100%, 100% 100%, 50px 50px, 50px 50px; 
+            z-index: -1; 
+            animation: bgMove 20s linear infinite;
+        }
+        @keyframes bgMove { 0% { transform: translate(0,0); } 100% { transform: translate(50px,50px); } }
+        
+        .hd { 
+            background: rgba(10,10,15,0.95); padding: 15px 20px; display: flex; 
+            justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid rgba(0,255,136,0.2); position: sticky; top: 0; z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .hd h1 { font-family: 'Orbitron'; font-size: 1.2rem; background: linear-gradient(45deg, #fff, var(--p)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .wb { background: linear-gradient(135deg, var(--g), #ff9500); color: #000; padding: 8px 15px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 5px; }
+        
+        .ct { max-width: 480px; margin: 0 auto; padding: 20px; }
+        .hid { display: none !important; }
+        
+        .login { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; }
+        .icon { 
+            width: 120px; height: 120px; border-radius: 25px; border: 3px solid var(--p); 
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1e); 
+            display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 30px; 
+            box-shadow: 0 0 30px rgba(0,255,136,0.5); animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .brand { font-family: 'Orbitron'; font-size: 2rem; color: var(--p); text-shadow: 0 0 20px rgba(0,255,136,0.6); margin-bottom: 10px; }
+        .inp { width: 100%; max-width: 350px; padding: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(0,255,136,0.3); border-radius: 12px; color: #fff; font-size: 1rem; margin-bottom: 15px; outline: none; transition: all 0.3s; }
+        .inp:focus { border-color: var(--p); box-shadow: 0 0 15px rgba(0,255,136,0.3); }
+        .btn { width: 100%; max-width: 350px; padding: 16px; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+        .btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: 0.5s; }
+        .btn:hover::before { left: 100%; }
+        .btn-p { background: linear-gradient(135deg, var(--p), #00cc6a); color: #000; box-shadow: 0 4px 15px rgba(0,255,136,0.4); }
+        .btn-g { background: linear-gradient(135deg, var(--g), #ff9500); color: #000; }
+        .btn-r { background: linear-gradient(135deg, var(--d), #cc0000); color: #fff; }
+        .btn-b { background: linear-gradient(135deg, var(--b), #0099cc); color: #000; }
+        .btn-v { background: linear-gradient(135deg, var(--v), #6d28d9); color: #fff; }
+        .btn-prem { background: linear-gradient(135deg, var(--prem), #8b5cf6); color: #fff; }
+        .btn-ram { background: linear-gradient(135deg, var(--ram), #2563eb); color: #fff; }
+        .btn-success { background: linear-gradient(135deg, var(--success), #27ae60); color: #fff; }
+        .btn-warning { background: linear-gradient(135deg, var(--warning), #e67e22); color: #fff; }
+        .btn-danger { background: linear-gradient(135deg, var(--danger), #c0392b); color: #fff; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        
+        .sec { display: none; animation: fadeIn 0.5s; } 
+        .sec.act { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .card { background: rgba(20,20,30,0.95); border-radius: 20px; padding: 25px; border: 1px solid rgba(0,255,136,0.2); margin-bottom: 20px; backdrop-filter: blur(10px); }
+        .card h2 { font-family: 'Orbitron'; font-size: 1.3rem; color: var(--p); text-align: center; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        
+        .nav { 
+            position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10,10,15,0.95); 
+            border-top: 1px solid rgba(0,255,136,0.2); display: flex; justify-content: space-around; 
+            padding: 10px 0; z-index: 99; backdrop-filter: blur(10px);
+        }
+        .nav button { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px; color: rgba(255,255,255,0.5); background: none; border: none; cursor: pointer; font-size: 0.7rem; transition: all 0.3s; }
+        .nav button.act { color: var(--p); transform: translateY(-5px); }
+        .nav button i { font-size: 1.3rem; }
+        
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
+        .grid > div { 
+            background: rgba(0,0,0,0.4); border-radius: 15px; padding: 20px 10px; text-align: center; 
+            border: 1px solid rgba(0,255,136,0.2); transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden;
+        }
+        .grid > div::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, transparent, rgba(0,255,136,0.1), transparent); opacity: 0; transition: 0.3s; }
+        .grid > div:hover::before { opacity: 1; }
+        .grid > div:hover { transform: translateY(-5px); border-color: var(--p); box-shadow: 0 10px 30px rgba(0,255,136,0.2); }
+        .grid > div i { font-size: 2rem; color: var(--p); margin-bottom: 8px; display: block; }
+        .grid > div.lock { opacity: 0.6; } 
+        .grid > div.lock::after { content: '🔒'; position: absolute; top: 5px; right: 5px; font-size: 0.8rem; }
+        .grid > div.vip i { color: var(--g); }
+        .grid > div.new::after { content: 'NEW'; position: absolute; top: 5px; right: 5px; background: var(--d); color: #fff; padding: 2px 6px; border-radius: 5px; font-size: 0.6rem; font-weight: 700; }
+        
+        .bags { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .bag { 
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,170,0,0.1)); 
+            border: 2px solid var(--g); border-radius: 15px; padding: 20px; text-align: center; 
+            cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .bag::before { content: '🎁'; font-size: 3rem; display: block; margin-bottom: 10px; filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
+        .bag:hover { transform: scale(1.05); box-shadow: 0 0 30px rgba(255,215,0,0.3); }
+        .bag b { font-family: 'Orbitron'; font-size: 1.3rem; color: var(--g); display: block; margin-bottom: 5px; }
+        .bag small { display: block; font-size: 0.8rem; color: rgba(255,255,255,0.7); }
+        .bag.vip { background: linear-gradient(135deg, rgba(255,0,110,0.1), rgba(255,0,110,0.2)); border-color: var(--r); }
+        .bag.vip::before { content: '👑'; }
+        .bag.vip b { color: var(--r); }
+        
+        /* Wheel with numbers */
+        .wheel-container { position: relative; width: 320px; height: 320px; margin: 20px auto; }
+        .wheel { 
+            width: 100%; height: 100%; border-radius: 50%; position: relative; 
+            border: 5px solid var(--g); box-shadow: 0 0 30px rgba(255,215,0,0.3);
+            background: conic-gradient(
+                var(--d) 0deg 30deg, var(--w) 30deg 60deg, var(--p) 60deg 90deg, 
+                var(--b) 90deg 120deg, var(--v) 120deg 150deg, var(--d) 150deg 180deg,
+                var(--w) 180deg 210deg, var(--p) 210deg 240deg, var(--b) 240deg 270deg,
+                var(--v) 270deg 300deg, var(--d) 300deg 330deg, var(--g) 330deg 360deg
+            );
+            transition: transform 4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .wheel-number {
+            position: absolute;
+            font-weight: 900;
+            font-size: 1rem;
+            color: #fff;
+            text-shadow: 0 0 5px rgba(0,0,0,0.9);
+            left: 50%;
+            top: 50%;
+            transform-origin: center;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: -20px;
+            margin-top: -20px;
+        }
+        .wheel-number:nth-child(1) { transform: rotate(15deg) translateY(-130px) rotate(-15deg); }
+        .wheel-number:nth-child(2) { transform: rotate(45deg) translateY(-130px) rotate(-45deg); }
+        .wheel-number:nth-child(3) { transform: rotate(75deg) translateY(-130px) rotate(-75deg); }
+        .wheel-number:nth-child(4) { transform: rotate(105deg) translateY(-130px) rotate(-105deg); }
+        .wheel-number:nth-child(5) { transform: rotate(135deg) translateY(-130px) rotate(-135deg); }
+        .wheel-number:nth-child(6) { transform: rotate(165deg) translateY(-130px) rotate(-165deg); }
+        .wheel-number:nth-child(7) { transform: rotate(195deg) translateY(-130px) rotate(-195deg); }
+        .wheel-number:nth-child(8) { transform: rotate(225deg) translateY(-130px) rotate(-225deg); }
+        .wheel-number:nth-child(9) { transform: rotate(255deg) translateY(-130px) rotate(-255deg); }
+        .wheel-number:nth-child(10) { transform: rotate(285deg) translateY(-130px) rotate(-285deg); }
+        .wheel-number:nth-child(11) { transform: rotate(315deg) translateY(-130px) rotate(-315deg); }
+        .wheel-number:nth-child(12) { transform: rotate(345deg) translateY(-130px) rotate(-345deg); }
+        
+        .wheel::before { 
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            width: 70px; height: 70px; background: var(--dk); border-radius: 50%; 
+            border: 4px solid var(--g); z-index: 10;
+        }
+        .wheel::after { content: 'FF'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: 'Orbitron'; font-weight: 900; font-size: 1.3rem; color: var(--g); z-index: 11; }
+        .wheel-pointer { 
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%); 
+            width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; 
+            border-top: 30px solid var(--d); z-index: 20; filter: drop-shadow(0 0 10px rgba(255,71,87,0.8));
+        }
+        
+        .wheel-options { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .wheel-btn { padding: 10px 20px; border: 2px solid var(--p); background: rgba(0,255,136,0.1); color: var(--p); border-radius: 25px; cursor: pointer; font-weight: 700; transition: all 0.3s; }
+        .wheel-btn:hover, .wheel-btn.act { background: var(--p); color: #000; box-shadow: 0 0 20px rgba(0,255,136,0.4); }
+        
+        .prize-display { 
+            background: linear-gradient(135deg, rgba(0,0,0,0.6), rgba(20,20,30,0.8)); 
+            border: 2px solid var(--g); border-radius: 15px; padding: 20px; text-align: center; margin-top: 20px;
+            display: none;
+        }
+        .prize-display.show { display: block; animation: prizePop 0.5s; }
+        @keyframes prizePop { 0% { transform: scale(0.8); opacity: 0; } 50% { transform: scale(1.1); } 100% { transform: scale(1); opacity: 1; } }
+        .prize-display h3 { color: var(--g); font-family: 'Orbitron'; margin-bottom: 10px; }
+        .prize-display .kc-amount { font-size: 3rem; font-weight: 900; color: var(--p); text-shadow: 0 0 20px rgba(0,255,136,0.5); }
+        
+        .kc-wallet { 
+            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(0,212,255,0.05)); 
+            border: 2px solid var(--b); border-radius: 15px; padding: 20px; margin-top: 20px;
+        }
+        .kc-wallet h3 { color: var(--b); margin-bottom: 15px; font-size: 1.1rem; }
+        .kc-balance { font-size: 2rem; font-weight: 900; color: var(--b); margin-bottom: 15px; }
+        
+        .file { 
+            background: rgba(0,0,0,0.4); border: 2px solid rgba(0,255,136,0.3); border-radius: 15px; 
+            padding: 20px; margin-bottom: 15px; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .file:hover { border-color: var(--p); transform: translateX(10px); background: rgba(0,255,136,0.05); }
+        .file.hot { border-color: var(--d); background: rgba(255,71,87,0.1); }
+        .file.best { border-color: var(--g); background: rgba(255,215,0,0.1); }
+        .file.max { border-color: var(--r); background: linear-gradient(135deg, rgba(255,0,110,0.1), rgba(255,0,110,0.2)); }
+        .file span.badge { position: absolute; top: -10px; right: 10px; padding: 3px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: 700; }
+        .file.hot span.badge { background: var(--d); color: #fff; }
+        .file.best span.badge { background: var(--g); color: #000; }
+        .file.max span.badge { background: var(--r); color: #fff; }
+        .file b { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--p); display: block; margin-bottom: 5px; }
+        .file p { font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.4; }
+        .file small { display: block; margin-top: 8px; color: var(--g); font-size: 0.75rem; }
+        
+        /* File chạy */
+        .run-file-btn {
+            background: linear-gradient(135deg, #00ff88, #00cc6a);
+            color: #000;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .run-file-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,255,136,0.3);
+        }
+        
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 12px; overflow-x: auto; }
+        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; transition: all 0.3s; font-weight: 500; color: rgba(255,255,255,0.6); border: none; background: transparent; font-size: 0.8rem; white-space: nowrap; min-width: 80px; }
+        .tab.act { background: rgba(0,255,136,0.2); color: var(--p); box-shadow: 0 0 15px rgba(0,255,136,0.2); }
+        
+        .qr-container { background: #fff; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 20px; position: relative; }
+        .qr-container img { width: 200px; height: 200px; border-radius: 10px; }
+        .qr-info { text-align: center; margin-bottom: 15px; }
+        .qr-info p { margin: 5px 0; }
+        .qr-info .bank-name { font-size: 1.2rem; font-weight: 700; color: var(--p); }
+        .qr-info .content-code { 
+            background: rgba(0,255,136,0.1); border: 1px dashed var(--p); 
+            padding: 10px; border-radius: 8px; margin-top: 10px; font-family: monospace;
+        }
+        
+        .card-types { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .card-type { 
+            padding: 15px; background: rgba(255,255,255,0.05); border: 2px solid transparent; 
+            border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.3s;
+        }
+        .card-type:hover, .card-type.selected { border-color: var(--p); background: rgba(0,255,136,0.1); }
+        .card-type i { font-size: 1.5rem; margin-bottom: 5px; display: block; }
+        
+        .denomination-select { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .denom-btn { 
+            padding: 10px; background: rgba(255,255,255,0.05); border: 2px solid transparent;
+            border-radius: 8px; color: #fff; cursor: pointer; font-weight: 700; transition: all 0.3s;
+        }
+        .denom-btn:hover, .denom-btn.selected { border-color: var(--p); background: rgba(0,255,136,0.1); color: var(--p); }
+        
+        .his { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 10px; border-left: 3px solid var(--p); transition: all 0.3s; }
+        .his:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .his.r { border-left-color: var(--d); }
+        .his.d { border-left-color: var(--g); }
+        .his.b { border-left-color: var(--b); }
+        .his.v { border-left-color: var(--v); }
+        .his.acc { border-left-color: var(--g); background: rgba(255,215,0,0.05); }
+        .his b { font-family: 'Orbitron'; }
+        .his small { color: rgba(255,255,255,0.5); font-size: 0.75rem; }
+        .his.plus { color: var(--p); }
+        .his.min { color: var(--d); }
+        .his.neu { color: var(--b); }
+        .his .acc-info { font-size: 0.8rem; color: var(--g); margin-top: 5px; }
+        .his .order-code { font-size: 0.7rem; color: var(--b); font-family: monospace; }
+        
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; backdrop-filter: blur(5px); }
+        .modal.act { display: flex; }
+        .modal-content { 
+            background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 20px; 
+            padding: 25px; max-width: 400px; width: 100%; border: 1px solid rgba(0,255,136,0.3); 
+            box-shadow: 0 0 40px rgba(0,255,136,0.2); text-align: center; animation: modalPop 0.3s;
+        }
+        @keyframes modalPop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal h3 { font-family: 'Orbitron'; color: var(--p); font-size: 1.3rem; margin-bottom: 15px; }
+        .modal p { color: rgba(255,255,255,0.8); margin-bottom: 20px; line-height: 1.6; white-space: pre-line; }
+        .modal-buttons { display: flex; gap: 10px; }
+        .modal button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .modal .btn-cancel { background: rgba(255,255,255,0.1); color: #fff; }
+        .modal .btn-confirm { background: linear-gradient(135deg, var(--p), #00cc6a); color: #000; }
+        .modal button:hover { transform: translateY(-2px); }
+        
+        .toast { 
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%) translateY(-100px); 
+            background: rgba(0,0,0,0.95); color: #fff; padding: 15px 25px; border-radius: 10px; 
+            border: 1px solid var(--p); z-index: 2000; opacity: 0; transition: all 0.3s; 
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .toast.act { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast i { color: var(--p); }
+        
+        .prem { 
+            display: inline-flex; align-items: center; gap: 5px;
+            background: linear-gradient(135deg, var(--g), #ff9500); color: #000; 
+            padding: 5px 15px; border-radius: 20px; font-size: 0.85rem; font-weight: 700; 
+            animation: glow 2s infinite;
+        }
+        @keyframes glow { 0%,100% { box-shadow: 0 0 5px rgba(255,215,0,0.5); } 50% { box-shadow: 0 0 20px rgba(255,215,0,0.8); } }
+        
+        .countdown { 
+            background: linear-gradient(135deg, rgba(255,71,87,0.2), rgba(255,71,87,0.1)); 
+            border: 1px solid var(--d); border-radius: 10px; padding: 10px; 
+            font-family: 'Orbitron'; color: var(--d); margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .note { margin-top: 15px; padding: 15px; background: rgba(255,193,7,0.1); border-radius: 10px; border-left: 4px solid var(--g); font-size: 0.85rem; line-height: 1.5; }
+        .note.r { background: rgba(255,71,87,0.1); border-left-color: var(--d); }
+        .note.p { background: rgba(0,255,136,0.1); border-left-color: var(--p); }
+        
+        .admin-panel { background: rgba(255,0,110,0.1); border: 2px solid var(--r); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .admin-panel h3 { color: var(--r); font-family: 'Orbitron'; margin-bottom: 15px; text-align: center; }
+        .admin-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .admin-stat { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; text-align: center; }
+        .admin-stat b { display: block; font-size: 1.5rem; color: var(--p); }
+        .admin-stat span { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+        
+        .items-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .item-box { 
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(0,255,136,0.2); 
+            border-radius: 10px; padding: 15px 5px; text-align: center; transition: all 0.3s;
+        }
+        .item-box:hover { border-color: var(--p); transform: translateY(-3px); }
+        .item-box i { font-size: 1.5rem; color: var(--p); margin-bottom: 5px; }
+        .item-box span { display: block; font-size: 0.75rem; }
+        
+        .result-box { 
+            background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,212,255,0.1)); 
+            border: 2px solid var(--p); border-radius: 15px; padding: 20px; 
+            text-align: center; margin-top: 20px; display: none;
+        }
+        .result-box.show { display: block; animation: fadeIn 0.5s; }
+        .result-box h4 { color: var(--p); margin-bottom: 10px; }
+        .result-box .vip-level { font-size: 2rem; font-weight: 900; color: var(--g); text-shadow: 0 0 20px rgba(255,215,0,0.5); }
+        
+        .platform-select { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
+        .platform-btn { 
+            padding: 30px 20px; border: 2px solid rgba(0,255,136,0.3); border-radius: 15px; 
+            background: rgba(0,0,0,0.3); cursor: pointer; transition: all 0.3s; text-align: center;
+        }
+        .platform-btn:hover { border-color: var(--p); background: rgba(0,255,136,0.1); transform: scale(1.05); }
+        .platform-btn i { font-size: 3rem; margin-bottom: 10px; display: block; }
+        .platform-btn.android i { color: #3ddc84; }
+        .platform-btn.ios i { color: #007aff; }
+        
+        /* Admin User List */
+        .user-list { max-height: 400px; overflow-y: auto; margin-bottom: 20px; }
+        .user-item { 
+            display: flex; align-items: center; justify-content: space-between; 
+            padding: 15px; background: rgba(0,0,0,0.3); border-radius: 10px; 
+            margin-bottom: 10px; border-left: 3px solid var(--p);
+        }
+        .user-info h4 { font-size: 1rem; margin-bottom: 5px; }
+        .user-info small { color: rgba(255,255,255,0.5); font-size: 0.7rem; }
+        .user-actions { display: flex; gap: 5px; }
+        .user-actions button { padding: 5px 10px; border: none; border-radius: 5px; font-size: 0.7rem; cursor: pointer; }
+        .user-locked { opacity: 0.5; filter: grayscale(0.5); }
+        .system-maintenance {
+            background: var(--danger);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        @media (max-width: 400px) {
+            .grid { grid-template-columns: repeat(2, 1fr); }
+            .bags { grid-template-columns: 1fr; }
+            .bag:last-child { grid-column: 1 !important; }
+            .wheel-number { font-size: 0.85rem; }
+        }
+        
+        .loading { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .confetti { position: fixed; width: 10px; height: 10px; background: var(--p); position: absolute; animation: confetti-fall 3s linear forwards; z-index: 9999; }
+        @keyframes confetti-fall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+        
+        .bag-file { background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(139,92,246,0.2)); border-color: var(--v); }
+        .bag-file::before { content: '📁'; }
+        .bag-file b { color: var(--v); }
+
+        .maintenance {
+            background: rgba(255,0,0,0.2);
+            border: 2px solid var(--d);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        .maintenance i { font-size: 3rem; color: var(--d); margin-bottom: 15px; }
+
+        .device-selector {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .device-option {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .device-option:last-child { border-bottom: none; }
+        .device-option:hover { background: rgba(0,255,136,0.1); border-radius: 8px; }
+        .device-option.selected { background: rgba(0,255,136,0.2); color: var(--p); font-weight: 700; }
+        .device-option i { width: 20px; color: var(--p); }
+
+        .prem-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .prem-card {
+            background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(139,92,246,0.1));
+            border: 2px solid var(--prem);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .prem-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(139,92,246,0.3); }
+        .prem-card i { font-size: 2rem; color: var(--prem); margin-bottom: 10px; }
+        .prem-card b { font-size: 1.3rem; color: var(--prem); display: block; margin-bottom: 5px; }
+        .prem-card small { color: rgba(255,255,255,0.7); }
+        .prem-card .price { font-size: 1.1rem; color: var(--g); margin-top: 10px; font-weight: 700; }
+
+        .game-launch-hint {
+            background: rgba(0,212,255,0.1);
+            border-left: 4px solid var(--b);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+
+    <header class="hd" id="head" style="display:none">
+        <h1><i class="fas fa-crosshairs"></i> AKY BARO V2 - MÁY CHỦ</h1>
+        <div class="wb"><i class="fas fa-wallet"></i> <span id="bal">0</span>đ</div>
+    </header>
+
+    <div class="ct">
+        <!-- System Maintenance Warning -->
+        <div id="maintenanceWarning" class="system-maintenance" style="display:none">
+            <i class="fas fa-exclamation-triangle"></i> HỆ THỐNG ĐANG BẢO TRÌ - VUI LÒNG QUAY LẠI SAU
+        </div>
+    
+        <!-- Login -->
+        <div class="login" id="login">
+            <div class="icon"><i class="fas fa-crosshairs" style="color:var(--p)"></i></div>
+            <h1 class="brand">AKY BARO V2</h1>
+            <p style="color:rgba(255,255,255,0.5);margin-bottom:30px">Free Fire Ultimate Tool - Máy Chủ Chính Thức</p>
+
+            <input type="text" class="inp" id="user" placeholder="Tên đăng nhập...">
+            <input type="password" class="inp" id="pass" placeholder="Mật khẩu...">
+
+            <button class="btn btn-p" onclick="doLogin()">ĐĂNG NHẬP</button>
+
+            <div style="margin-top:20px;font-size:0.85rem;color:rgba(255,255,255,0.5)">
+                <p style="color:var(--g)"><i class="fas fa-crown"></i> Premium Key: Liên hệ Zalo</p>
+            </div>
+            <div style="margin-top:30px;color:rgba(255,255,255,0.4);font-size:0.8rem">
+                <p>&copy; 2024 <a href="https://tiktok.com/@akybaro" target="_blank" style="color:var(--p);text-decoration:none">@akybaro</a></p>
+                <p><i class="fas fa-phone"></i> Zalo: 0974429241</p>
+            </div>
+        </div>
+
+        <!-- Home -->
+        <div class="sec" id="home">
+            <div class="card">
+                <h2><i class="fas fa-gamepad"></i> MENU CHÍNH</h2>
+                <div class="grid">
+                    <div onclick="go('bag')">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Túi Mù Acc</span>
+                    </div>
+                    <div onclick="go('bagfile')">
+                        <i class="fas fa-file-archive"></i>
+                        <span>Túi Mù File</span>
+                    </div>
+                    <div onclick="go('wheel')">
+                        <i class="fas fa-dharmachakra"></i>
+                        <span>Vòng Quay</span>
+                    </div>
+                    <div onclick="go('filevip')">
+                        <i class="fas fa-crown" style="color:var(--g)"></i>
+                        <span>File VIP</span>
+                    </div>
+                    <div class="lock" onclick="checkPrem('sense')" id="menu-sense">
+                        <i class="fas fa-crosshairs"></i>
+                        <span>Độ Nhạy</span>
+                    </div>
+                    <div class="lock" onclick="checkPrem('aim')" id="menu-aim">
+                        <i class="fas fa-bullseye"></i>
+                        <span>Aim Head</span>
+                    </div>
+                    <div class="lock" onclick="checkPrem('cleaner')" id="menu-cleaner">
+                        <i class="fas fa-broom" style="color:var(--ram)"></i>
+                        <span>Dọn Dẹp RAM</span>
+                    </div>
+                    <div onclick="go('shop')">
+                        <i class="fas fa-store"></i>
+                        <span>Shop</span>
+                    </div>
+                    <div onclick="go('deposit')">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Nạp Tiền</span>
+                    </div>
+                    <div onclick="go('history')">
+                        <i class="fas fa-history"></i>
+                        <span>Lịch Sử</span>
+                    </div>
+                    <div onclick="go('account')">
+                        <i class="fas fa-user"></i>
+                        <span>Tài Khoản</span>
+                    </div>
+                    <div onclick="go('premium')" style="border-color:var(--prem)">
+                        <i class="fas fa-crown" style="color:var(--prem)"></i>
+                        <span>VIP Premium</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card" style="display:none" id="admin-quick">
+                <h2><i class="fas fa-shield-alt"></i> ADMIN PANEL</h2>
+                <div class="admin-stats">
+                    <div class="admin-stat">
+                        <b id="admin-users">0</b>
+                        <span>Người dùng</span>
+                    </div>
+                    <div class="admin-stat">
+                        <b id="admin-pending">0</b>
+                        <span>Chờ duyệt</span>
+                    </div>
+                    <div class="admin-stat">
+                        <b id="admin-premium">0</b>
+                        <span>Premium</span>
+                    </div>
+                    <div class="admin-stat">
+                        <b id="admin-locked">0</b>
+                        <span>Bị khóa</span>
+                    </div>
+                </div>
+                <button class="btn btn-r" onclick="go('admin')">Quản Lý Hệ Thống</button>
+            </div>
+        </div>
+
+        <!-- Bag Acc - Chỉ hiển thị Hên Xui -->
+        <div class="sec" id="bag">
+            <div class="card">
+                <h2><i class="fas fa-gift"></i> TÚI MÙ ACC FF</h2>
+                <div class="bags">
+                    <div class="bag" onclick="buyBag(49000, '49K')">
+                        <b>49.000đ</b>
+                        <small>Hên Xui 100%</small>
+                    </div>
+                    <div class="bag" onclick="buyBag(99000, '99K')">
+                        <b>99.000đ</b>
+                        <small>Hên Xui 100%</small>
+                    </div>
+                    <div class="bag" onclick="buyBag(149000, '149K')">
+                        <b>149.000đ</b>
+                        <small>Hên Xui 100%</small>
+                    </div>
+                    <div class="bag" onclick="buyBag(199000, '199K')">
+                        <b>199.000đ</b>
+                        <small>Hên Xui 100%</small>
+                    </div>
+                    <div class="bag" onclick="buyBag(299000, '299K')">
+                        <b>299.000đ</b>
+                        <small>Hên Xui 100%</small>
+                    </div>
+                    <div class="bag vip" onclick="buyBag(499000, '499K')">
+                        <b>499.000đ</b>
+                        <small>Hên Xui 100% - Cao Cấp</small>
+                    </div>
+                    <div class="bag vip" onclick="buyBag(999000, '999K')" style="grid-column:1/3">
+                        <b>999.000đ</b>
+                        <small>Hên Xui 100% - ĐẠI GIA</small>
+                    </div>
+                </div>
+                <div class="note">
+                    <b><i class="fas fa-info-circle"></i> Lưu ý:</b> Túi mù là hên xui 100% - Tiền càng cao tỉ lệ nổ càng lớn. Chụp màn hình lịch sử gửi Zalo để nhận acc.
+                </div>
+            </div>
+        </div>
+
+        <!-- Bag File -->
+        <div class="sec" id="bagfile">
+            <div class="card">
+                <h2><i class="fas fa-file-archive"></i> TÚI MÙ FILE</h2>
+                <div class="bags">
+                    <div class="bag bag-file" onclick="buyBagFile(49000, 'File 49K')">
+                        <b>49.000đ</b>
+                        <small>Hên Xui 100%</small>
+                    </div>
+                    <div class="bag bag-file" onclick="buyBagFile(200000, 'File 200K')">
+                        <b>200.000đ</b>
+                        <small>Hên Xui 100%</small>
+                    </div>
+                    <div class="bag bag-file vip" onclick="buyBagFile(500000, 'File 500K')" style="grid-column:1/3">
+                        <b>500.000đ</b>
+                        <small>Hên Xui 100% - VIP</small>
+                    </div>
+                </div>
+                <div class="note">
+                    <b><i class="fas fa-star"></i> Tỉ lệ File 49K:</b> AkyBanPhong (cao), AkyBaro (cao), AkyDeVuongV3 (cao), AimHead (thấp), AimLock (siêu thấp)<br><br>
+                    <b><i class="fas fa-star"></i> Tỉ lệ File 200K:</b> Các bản siêu ngon, antiban, cân rank kèo tiền. Tỉ lệ nổ file 500K-2000K: 0.001%<br><br>
+                    <b><i class="fas fa-crown"></i> File 500K:</b> AimLockAn (độc quyền), file 5 triệu, key premium. Chụp màn hình gửi Zalo để nhận file!
+                </div>
+            </div>
+        </div>
+
+        <!-- Wheel -->
+        <div class="sec" id="wheel">
+            <div class="card">
+                <h2><i class="fas fa-dharmachakra"></i> VÒNG QUAY MAY MẮN</h2>
+                
+                <div class="wheel-options">
+                    <button class="wheel-btn act" onclick="setWheel(9000, this)">9K</button>
+                    <button class="wheel-btn" onclick="setWheel(19000, this)">19K</button>
+                    <button class="wheel-btn" onclick="setWheel(49000, this)">49K</button>
+                    <button class="wheel-btn" onclick="setWheel(99000, this)">99K</button>
+                </div>
+
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel" id="wheelEl">
+                        <div class="wheel-number">9</div>
+                        <div class="wheel-number">19</div>
+                        <div class="wheel-number">29</div>
+                        <div class="wheel-number">50</div>
+                        <div class="wheel-number">113</div>
+                        <div class="wheel-number">283</div>
+                        <div class="wheel-number">566</div>
+                        <div class="wheel-number">1132</div>
+                        <div class="wheel-number">2830</div>
+                        <div class="wheel-number">9</div>
+                        <div class="wheel-number">19</div>
+                        <div class="wheel-number">29</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-g" onclick="spin()" id="spinBtn" style="font-size:1.2rem">
+                    <i class="fas fa-play"></i> QUAY NGAY (<span id="wheelPrice">9.000</span>đ)
+                </button>
+
+                <div class="prize-display" id="prizeDisplay">
+                    <h3><i class="fas fa-trophy"></i> CHÚC MỪNG!</h3>
+                    <div class="kc-amount" id="prizeAmount">0</div>
+                    <p>Kim Cương</p>
+                    <button class="btn btn-p" onclick="claimPrize()" style="margin-top:15px;max-width:200px">NHẬN VÀO KHO</button>
+                </div>
+
+                <div class="kc-wallet">
+                    <h3><i class="fas fa-gem"></i> KHO KIM CƯƠNG</h3>
+                    <div class="kc-balance" id="kcBalance">0 KC</div>
+                    <input type="text" class="inp" id="garenaId" placeholder="ID Garena của bạn..." style="max-width:100%;margin-bottom:10px">
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+                        <select class="inp" id="withdrawAmount" style="max-width:180px;margin:0">
+                            <option value="113">113 KC</option>
+                            <option value="283">283 KC</option>
+                            <option value="566">566 KC</option>
+                            <option value="1132">1132 KC</option>
+                            <option value="2830">2830 KC</option>
+                        </select>
+                        <button class="btn btn-b" onclick="withdrawKC()" style="width:auto;padding:15px 25px">RÚT KC</button>
+                    </div>
+                    <p style="font-size:0.8rem;color:rgba(255,255,255,0.5);margin-top:10px">Nhập ID Garena + chọn mốc KC. Admin sẽ chuyển KC trong 24h.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- File VIP -->
+        <div class="sec" id="filevip">
+            <div class="card">
+                <h2><i class="fas fa-crown"></i> FILE VIP AKYBARO</h2>
+                
+                <div class="file" onclick="buyFile(50000, 'M1887')">
+                    <b>50.000đ</b>
+                    <p><b>Chuyên M1887 - NHẸ TÂM, BÁM TÂM</b></p>
+                    <small>Chỉ bắn phòng, không khuyến khích đi rank</small>
+                    <div class="run-file-btn" onclick="runFile(50000, event, 'android')">🚀 CHẠY FILE 50K - NHẸ TÂM</div>
+                    <div class="run-file-btn" onclick="runFile(50000, event, 'ios')" style="background:linear-gradient(135deg,#007aff,#0051a8);color:#fff;margin-top:5px">🍎 CHẠY FILE 50K - NHẸ TÂM (iOS)</div>
+                </div>
+
+                <div class="file hot" onclick="buyFile(150000, 'Best Seller')">
+                    <span class="badge">BÁN CHẠY</span>
+                    <b>150.000đ</b>
+                    <p><b>BÁM TÂM, NHẸ ĐẦU - LÀM RIÊNG TỪNG MÁY</b></p>
+                    <small>Bản bán chạy nhất, đặc biệt làm riêng từng máy</small>
+                    <div class="run-file-btn" onclick="runFile(150000, event, 'android')">🚀 CHẠY FILE 150K - BÁM TÂM</div>
+                    <div class="run-file-btn" onclick="runFile(150000, event, 'ios')" style="background:linear-gradient(135deg,#007aff,#0051a8);color:#fff;margin-top:5px">🍎 CHẠY FILE 150K (iOS)</div>
+                </div>
+
+                <div class="file" onclick="buyFile(300000, 'Pro')">
+                    <b>300.000đ</b>
+                    <p><b>BÁM TÂM, NHẸ ĐẦU, AIM ẨN</b></p>
+                    <small>Nhấp hay kéo gì cũng mượt, đi kèo tiền, check không ra, an toàn 1000%</small>
+                    <div class="run-file-btn" onclick="runFile(300000, event, 'android')">🚀 CHẠY FILE 300K - AIM ẨN</div>
+                    <div class="run-file-btn" onclick="runFile(300000, event, 'ios')" style="background:linear-gradient(135deg,#007aff,#0051a8);color:#fff;margin-top:5px">🍎 CHẠY FILE 300K (iOS)</div>
+                </div>
+
+                <div class="file best" onclick="buyFile(500000, 'Ultra')">
+                    <span class="badge">ĐÁNG MUA</span>
+                    <b>500.000đ</b>
+                    <p><b>SIÊU BÁ - KÉO NHẸ LÀ LÊN ĐẦU</b></p>
+                    <small>Chỉ cần kéo nhẹ là full đỏ, không full đỏ không lấy tiền</small>
+                    <div class="run-file-btn" onclick="runFile(500000, event, 'android')">🚀 CHẠY FILE 500K - SIÊU BÁ</div>
+                    <div class="run-file-btn" onclick="runFile(500000, event, 'ios')" style="background:linear-gradient(135deg,#007aff,#0051a8);color:#fff;margin-top:5px">🍎 CHẠY FILE 500K (iOS)</div>
+                </div>
+
+                <div class="file max" onclick="buyFile(1000000, 'Max')">
+                    <span class="badge">VIP MAX</span>
+                    <b>1.000.000đ</b>
+                    <p><b>QUÁ BÁ - NGÓN CHÂN KÉO CŨNG LÊN ĐẦU</b></p>
+                    <small>Ngon nhất! Ngón chân kéo cũng bay đầu, cân rank, cân sàn, cân tất cả</small>
+                    <div class="run-file-btn" onclick="runFile(1000000, event, 'android')">🚀 CHẠY FILE 1TR - QUÁ BÁ</div>
+                    <div class="run-file-btn" onclick="runFile(1000000, event, 'ios')" style="background:linear-gradient(135deg,#007aff,#0051a8);color:#fff;margin-top:5px">🍎 CHẠY FILE 1TR (iOS)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sensitivity -->
+        <div class="sec" id="sense">
+            <div class="card">
+                <h2><i class="fas fa-crosshairs"></i> ĐỘ NHẠY VIP</h2>
+                <div class="tabs">
+                    <button class="tab act" onclick="switchTab(this,'sense')">ĐỘ NHẠY</button>
+                    <button class="tab" onclick="switchTab(this,'boost')">BOOST RAM</button>
+                </div>
+                
+                <div id="senseTab">
+                    <p style="margin-bottom:10px;color:var(--p)">Chọn dòng máy:</p>
+                    <div class="device-selector" id="deviceSelector"></div>
+                    <button class="btn btn-p" onclick="getSense()" style="max-width:100%">LẤY ĐỘ NHẠY</button>
+                    
+                    <div class="result-box" id="senseRes">
+                        <h4><i class="fas fa-check-circle"></i> ĐỘ NHẠY CỦA BẠN</h4>
+                        <div class="items-grid">
+                            <div class="item-box"><i class="fas fa-eye"></i><span>Nhìn XQ</span><b id="r1">-</b></div>
+                            <div class="item-box"><i class="fas fa-dot-circle"></i><span>Red Dot</span><b id="r2">-</b></div>
+                            <div class="item-box"><i class="fas fa-search-plus"></i><span>Scope 2x</span><b id="r3">-</b></div>
+                            <div class="item-box"><i class="fas fa-search"></i><span>Scope 4x</span><b id="r4">-</b></div>
+                            <div class="item-box" style="grid-column:1/4"><i class="fas fa-fire" style="color:var(--d)"></i><span>Nút Bắn</span><b id="r5" style="color:var(--d)">-</b></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="boostTab" style="display:none">
+                    <p style="margin-bottom:20px;text-align:center;color:var(--b)">Tăng tốc RAM, giảm lag, mượt máy</p>
+                    <div class="platform-select">
+                        <div class="platform-btn android" onclick="boostAndLaunch('android')">
+                            <i class="fab fa-android"></i>
+                            <span>ANDROID</span>
+                        </div>
+                        <div class="platform-btn ios" onclick="boostAndLaunch('ios')">
+                            <i class="fab fa-apple"></i>
+                            <span>iOS</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aim Head -->
+        <div class="sec" id="aim">
+            <div class="card">
+                <h2><i class="fas fa-bullseye"></i> AIM HEAD / AIM ẨN</h2>
+                <p style="text-align:center;margin-bottom:20px;color:rgba(255,255,255,0.8)">⚠️ TÍNH NĂNG YÊU CẦU KEY PREMIUM</p>
+                
+                <div class="platform-select">
+                    <div class="platform-btn android" onclick="checkPremKey('android', 'aim')">
+                        <i class="fab fa-android"></i>
+                        <span>ANDROID</span>
+                    </div>
+                    <div class="platform-btn ios" onclick="checkPremKey('ios', 'aim')">
+                        <i class="fab fa-apple"></i>
+                        <span>iOS</span>
+                    </div>
+                </div>
+
+                <div class="note r">
+                    <b><i class="fas fa-exclamation-triangle"></i> Lưu ý:</b> Aim Head yêu cầu KEY PREMIUM. Nếu bạn có Key Free, vui lòng mua Premium để sử dụng!
+                </div>
+            </div>
+        </div>
+
+        <!-- Dọn Dẹp RAM (Cleaner) - Mới -->
+        <div class="sec" id="cleaner">
+            <div class="card">
+                <h2><i class="fas fa-broom" style="color:var(--ram)"></i> DỌN DẸP RAM & TẮT TAG</h2>
+                <p style="text-align:center;margin-bottom:20px;color:var(--ram)">⚡ TẮT TAG, XÓA BỘ NHỚ ĐỆM, VÔ GAME MƯỢT HƠN</p>
+                
+                <div class="platform-select">
+                    <div class="platform-btn android" onclick="checkPremKey('android', 'cleaner')">
+                        <i class="fab fa-android"></i>
+                        <span>ANDROID</span>
+                    </div>
+                    <div class="platform-btn ios" onclick="checkPremKey('ios', 'cleaner')">
+                        <i class="fab fa-apple"></i>
+                        <span>iOS</span>
+                    </div>
+                </div>
+
+                <div class="note p">
+                    <b><i class="fas fa-info-circle"></i> Tác dụng:</b> Tự động tắt các ứng dụng chạy ngầm, xóa bộ nhớ đệm (cache), dọn rác hệ thống giúp máy mượt hơn khi vào game. Yêu cầu KEY PREMIUM.
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Shop -->
+        <div class="sec" id="premium">
+            <div class="card">
+                <h2><i class="fas fa-crown" style="color:var(--prem)"></i> VIP PREMIUM</h2>
+                <p style="text-align:center;margin-bottom:20px">Mua key để sử dụng tất cả tính năng (bao gồm Aim Head & Dọn RAM)</p>
+
+                <div class="prem-grid">
+                    <div class="prem-card" onclick="buyPremKey('1tuần')">
+                        <i class="fas fa-key"></i>
+                        <b>1 Tuần</b>
+                        <small>Dùng thử cao cấp</small>
+                        <div class="price">50.000đ</div>
+                    </div>
+                    <div class="prem-card" onclick="buyPremKey('1tháng')">
+                        <i class="fas fa-key"></i>
+                        <b>1 Tháng</b>
+                        <small>Tiết kiệm</small>
+                        <div class="price">150.000đ</div>
+                    </div>
+                    <div class="prem-card" onclick="buyPremKey('3tháng')">
+                        <i class="fas fa-key"></i>
+                        <b>3 Tháng</b>
+                        <small>Phổ biến nhất</small>
+                        <div class="price">300.000đ</div>
+                    </div>
+                    <div class="prem-card" onclick="buyPremKey('6tháng')">
+                        <i class="fas fa-key"></i>
+                        <b>6 Tháng</b>
+                        <small>Siêu tiết kiệm</small>
+                        <div class="price">500.000đ</div>
+                    </div>
+                    <div class="prem-card" style="grid-column:1/3" onclick="buyPremKey('vĩnhviễn')">
+                        <i class="fas fa-crown"></i>
+                        <b>VĨNH VIỄN</b>
+                        <small>Bảo kê 5 OB</small>
+                        <div class="price">1.000.000đ</div>
+                    </div>
+                </div>
+
+                <div class="note p" style="margin-top:20px">
+                    <b><i class="fas fa-info-circle"></i> Key Free:</b> Sử dụng được tất cả tính năng trừ Aim Head và Dọn RAM. Liên hệ Zalo để nhận hỗ trợ.
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop -->
+        <div class="sec" id="shop">
+            <div class="card">
+                <h2><i class="fas fa-store"></i> SHOP GAME</h2>
+                <div class="bags">
+                    <div class="bag" onclick="showToast('Liên hệ Zalo: 0974429241')">
+                        <div style="font-size:2rem">🎮</div>
+                        <span>Acc FF</span>
+                        <b>50K-500K</b>
+                    </div>
+                    <div class="bag" onclick="showToast('Liên hệ Zalo: 0974429241')">
+                        <div style="font-size:2rem">💎</div>
+                        <span>Kim Cương</span>
+                        <b>Giá Rẻ</b>
+                    </div>
+                    <div class="bag" onclick="showToast('Liên hệ Zalo: 0974429241')">
+                        <div style="font-size:2rem">👕</div>
+                        <span>Trang Phục</span>
+                        <b>30K-200K</b>
+                    </div>
+                    <div class="bag" onclick="showToast('Liên hệ Zalo: 0974429241')">
+                        <div style="font-size:2rem">🏆</div>
+                        <span>VIP Rank</span>
+                        <b>100K-1M</b>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Deposit -->
+        <div class="sec" id="deposit">
+            <div class="card">
+                <h2><i class="fas fa-wallet"></i> NẠP TIỀN</h2>
+                <div class="tabs">
+                    <button class="tab act" onclick="switchDep('bank')">Ngân Hàng</button>
+                    <button class="tab" onclick="switchDep('card')">Thẻ Cào</button>
+                </div>
+
+                <div id="depBank">
+                    <div class="maintenance">
+                        <i class="fas fa-tools"></i>
+                        <p><b>HỆ THỐNG BANK ĐANG BẢO TRÌ</b></p>
+                        <p style="font-size:1rem;margin-top:15px">Nạp không chiết khấu</p>
+                        <p style="font-size:0.9rem;margin-top:10px">Liên hệ Admin: <span style="color:var(--g)">akybaro</span></p>
+                        <p style="font-size:1.1rem;margin-top:10px;color:var(--p)">Zalo: 0974429241</p>
+                        <p style="font-size:0.8rem;margin-top:15px">Để được hỗ trợ!</p>
+                    </div>
+                </div>
+
+                <div id="depCard" style="display:none">
+                    <div class="card-types">
+                        <div class="card-type" onclick="selectCard(this, 'viettel')"><i class="fas fa-sim-card" style="color:#ff0000"></i><span>Viettel</span></div>
+                        <div class="card-type" onclick="selectCard(this, 'mobifone')"><i class="fas fa-sim-card" style="color:#0066cc"></i><span>Mobifone</span></div>
+                        <div class="card-type" onclick="selectCard(this, 'zing')"><i class="fas fa-gamepad" style="color:#ff6600"></i><span>Zing</span></div>
+                        <div class="card-type" onclick="selectCard(this, 'garena')"><i class="fas fa-shield-alt" style="color:#00ccff"></i><span>Garena</span></div>
+                    </div>
+                    
+                    <p style="margin:15px 0 10px;color:var(--g);font-weight:700"><i class="fas fa-money-bill-wave"></i> Chọn mệnh giá:</p>
+                    <div class="denomination-select">
+                        <button class="denom-btn" onclick="selectDenom(10000, this)">10K</button>
+                        <button class="denom-btn" onclick="selectDenom(20000, this)">20K</button>
+                        <button class="denom-btn" onclick="selectDenom(50000, this)">50K</button>
+                        <button class="denom-btn" onclick="selectDenom(100000, this)">100K</button>
+                        <button class="denom-btn" onclick="selectDenom(200000, this)">200K</button>
+                        <button class="denom-btn" onclick="selectDenom(500000, this)">500K</button>
+                    </div>
+                    
+                    <input type="text" class="inp" id="cardCode" placeholder="Mã thẻ..." style="max-width:100%">
+                    <input type="text" class="inp" id="cardSeri" placeholder="Số seri..." style="max-width:100%">
+                    <button class="btn btn-p" onclick="submitCard()" style="max-width:100%">NẠP THẺ</button>
+                    <div class="note r"><b><i class="fas fa-exclamation-triangle"></i> Lưu ý:</b> Phí chiết khấu 20% giá trị thẻ. Sai mệnh giá -50%!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="sec" id="history">
+            <div class="card">
+                <h2><i class="fas fa-history"></i> LỊCH SỬ</h2>
+                <div class="tabs">
+                    <button class="tab act" onclick="switchHis('all')">Tất Cả</button>
+                    <button class="tab" onclick="switchHis('acc')">Acc Đã Mua</button>
+                    <button class="tab" onclick="switchHis('file')">File Đã Mua</button>
+                    <button class="tab" onclick="switchHis('game')">Minigame</button>
+                    <button class="tab" onclick="switchHis('in')">Nạp</button>
+                    <button class="tab" onclick="switchHis('out')">Rút</button>
+                    <button class="tab" onclick="switchHis('prem')">Premium</button>
+                </div>
+                <div id="hisList"></div>
+            </div>
+        </div>
+
+        <!-- Account -->
+        <div class="sec" id="account">
+            <div class="card">
+                <h2><i class="fas fa-user-circle"></i> TÀI KHOẢN</h2>
+                <div style="text-align:center;margin-bottom:20px">
+                    <div style="width:100px;height:100px;background:linear-gradient(135deg,var(--p),var(--b));border-radius:50%;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:3rem;box-shadow:0 0 30px rgba(0,255,136,0.3)">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <h3 id="accName" style="font-size:1.5rem;margin-bottom:5px">User</h3>
+                    <div id="premBadge" style="display:none; background:linear-gradient(135deg,var(--prem),#8b5cf6); padding:5px 15px; border-radius:20px; color:#fff; display:inline-flex; align-items:center; gap:5px"><i class="fas fa-crown"></i> PREMIUM</div>
+                    <div id="lockedBadge" style="display:none; background:var(--danger); padding:5px 15px; border-radius:20px; color:#fff; margin-top:5px"><i class="fas fa-lock"></i> TÀI KHOẢN BỊ KHÓA</div>
+                    <div id="countdown" class="countdown" style="display:none"><i class="fas fa-clock"></i> <span id="daysLeft">0</span> ngày còn lại</div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:20px">
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:10px;text-align:center"><div style="font-family:'Orbitron';font-size:1.3rem;color:var(--p);font-weight:700" id="statBag">0</div><div style="font-size:0.75rem">Túi Mù</div></div>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:10px;text-align:center"><div style="font-family:'Orbitron';font-size:1.3rem;color:var(--p);font-weight:700" id="statSpin">0</div><div style="font-size:0.75rem">Lượt Quay</div></div>
+                    <div style="background:rgba(255,255,255,0.05);padding:15px;border-radius:10px;text-align:center"><div style="font-family:'Orbitron';font-size:1.3rem;color:var(--p);font-weight:700" id="statFile">0</div><div style="font-size:0.75rem">File VIP</div></div>
+                </div>
+
+                <div style="margin-top:20px">
+                    <a href="https://tiktok.com/@akybaro" target="_blank" style="display:flex;align-items:center;gap:15px;padding:15px;background:rgba(255,255,255,0.05);border-radius:10px;margin-bottom:10px;text-decoration:none;color:#fff">
+                        <i class="fab fa-tiktok" style="color:var(--p)"></i><span>Theo dõi TikTok @akybaro</span><i class="fas fa-chevron-right" style="margin-left:auto;opacity:0.3"></i>
+                    </a>
+                    <a href="https://zalo.me/0974429241" target="_blank" style="display:flex;align-items:center;gap:15px;padding:15px;background:rgba(255,255,255,0.05);border-radius:10px;margin-bottom:10px;text-decoration:none;color:#fff">
+                        <i class="fas fa-headset" style="color:var(--p)"></i><span>Liên hệ Zalo hỗ trợ</span><i class="fas fa-chevron-right" style="margin-left:auto;opacity:0.3"></i>
+                    </a>
+                    <div onclick="logout()" style="display:flex;align-items:center;gap:15px;padding:15px;background:rgba(255,255,255,0.05);border-radius:10px;cursor:pointer;color:var(--d)">
+                        <i class="fas fa-sign-out-alt"></i><span>Đăng xuất</span><i class="fas fa-chevron-right" style="margin-left:auto;opacity:0.3"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div class="sec" id="admin">
+            <div class="admin-panel">
+                <h2><i class="fas fa-shield-alt"></i> ADMIN CONTROL - MÁY CHỦ</h2>
+                <div class="admin-stats">
+                    <div class="admin-stat"><b id="totalUsers">0</b><span>Tổng Users</span></div>
+                    <div class="admin-stat"><b id="premiumUsers">0</b><span>Premium</span></div>
+                    <div class="admin-stat"><b id="pendingDeposits">0</b><span>Chờ duyệt</span></div>
+                    <div class="admin-stat"><b id="totalRevenue">0</b><span>Doanh thu</span></div>
+                </div>
+                
+                <div style="display:flex;gap:10px;margin-top:15px;flex-wrap:wrap">
+                    <button class="btn btn-warning" onclick="toggleMaintenance()" id="maintenanceBtn" style="flex:1;max-width:100%"><i class="fas fa-tools"></i> BẬT BẢO TRÌ</button>
+                    <button class="btn btn-success" onclick="exportData()" style="flex:1;max-width:100%"><i class="fas fa-download"></i> SAO LƯU</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-users"></i> QUẢN LÝ NGƯỜI DÙNG</h2>
+                <div class="user-list" id="userList"></div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-gem"></i> DUYỆT RÚT KC</h2>
+                <div id="withdrawList"></div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-check-circle"></i> DUYỆT NẠP TIỀN</h2>
+                <div id="pendingList"></div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-key"></i> TẠO KEY</h2>
+                <div class="tabs">
+                    <button class="tab act" onclick="switchKeyTab('7day')">Premium 7N</button>
+                    <button class="tab" onclick="switchKeyTab('30day')">Premium 30N</button>
+                    <button class="tab" onclick="switchKeyTab('1day-prem')">Premium 1N</button>
+                    <button class="tab" onclick="switchKeyTab('1day-free')">Key Thường 1N</button>
+                    <button class="tab" onclick="switchKeyTab('free')">Key Free</button>
+                </div>
+                
+                <div style="display:flex;gap:10px;margin-bottom:15px">
+                    <button class="btn btn-p" onclick="generateKey()" style="flex:2">TẠO KEY MỚI</button>
+                    <button class="btn btn-r" onclick="resetAllKeys()" style="flex:1">RESET TẤT CẢ</button>
+                </div>
+                
+                <div id="keyList" style="background:rgba(0,0,0,0.3);padding:15px;border-radius:10px;font-family:monospace;max-height:200px;overflow-y:auto"></div>
+                <div class="note">
+                    <b>Hướng dẫn:</b> Click vào key để copy. Reset key sẽ làm key cũ không dùng được nữa.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="nav" id="nav" style="display:none">
+        <button class="act" onclick="go('home')"><i class="fas fa-home"></i><span>Trang chủ</span></button>
+        <button onclick="go('bag')"><i class="fas fa-shopping-bag"></i><span>Túi mù</span></button>
+        <button onclick="go('wheel')"><i class="fas fa-dharmachakra"></i><span>Quay</span></button>
+        <button onclick="go('account')"><i class="fas fa-user"></i><span>Tài khoản</span></button>
+    </nav>
+
+    <!-- Modal & Toast -->
+    <div class="modal" id="modal"><div class="modal-content"><h3 id="modTitle">Thông báo</h3><p id="modText"></p><div class="modal-buttons"><button class="btn-cancel" onclick="closeModal()">Hủy</button><button class="btn-confirm" onclick="confirmModal()">Xác nhận</button></div></div></div>
+    <div class="toast" id="toast"><i class="fas fa-check-circle"></i> <span id="toastMsg">Thông báo</span></div>
+
+    <script>
+        // ==================== DATABASE MÁY CHỦ ====================
+        const DB = {
+            system: {
+                maintenance: false,
+                version: '2.0',
+                lastBackup: Date.now()
+            },
+            accounts: {
+                'akybaro': { 
+                    pass: 'admin123', 
+                    prem: true, 
+                    premKey: true, 
+                    days: 9999, 
+                    balance: 9999999, 
+                    kcBalance: 9999, 
+                    isAdmin: true,
+                    locked: false,
+                    created: Date.now(),
+                    firstLogin: Date.now(),
+                    bags: 0,
+                    spins: 0,
+                    files: 0,
+                    fileBags: 0,
+                    inventory: [],
+                    fileInventory: []
+                },
+                'free': { 
+                    pass: 'free123', 
+                    prem: false, 
+                    premKey: false, 
+                    days: 0, 
+                    balance: 100000, 
+                    kcBalance: 500,
+                    isAdmin: false,
+                    locked: false,
+                    created: Date.now(),
+                    firstLogin: Date.now(),
+                    bags: 0,
+                    spins: 0,
+                    files: 0,
+                    fileBags: 0,
+                    inventory: [],
+                    fileInventory: []
+                }
+            },
+            history: [],
+            pendingDeposits: [],
+            withdrawRequests: [],
+            keys: {
+                premium7: [],      // KEY_PREM7_
+                premium30: [],     // KEY_PREM30_
+                premium1day: [],   // KEY_PREM1D_
+                free1day: [],      // KEY_FREE1D_
+                free: []           // KEY_FREE_
+            },
+            usedKeys: [],
+            sessions: {} // Lưu session đang hoạt động
+        };
+
+        // Dữ liệu độ nhạy
+        const senseData = {
+            ip_old: { name: 'iPhone 6/6S/7/8/SE', look: 185, red: 165, s2: 155, s4: 180, fire: 42 },
+            ip_x: { name: 'iPhone X/XS/XR/11', look: 179, red: 160, s2: 152, s4: 176, fire: 44 },
+            ip_12: { name: 'iPhone 12/13 Series', look: 175, red: 158, s2: 150, s4: 172, fire: 46 },
+            ip_14: { name: 'iPhone 14/15 Series', look: 172, red: 155, s2: 148, s4: 170, fire: 48 },
+            ss_a: { name: 'Samsung A Series', look: 190, red: 170, s2: 160, s4: 185, fire: 40 },
+            ss_s: { name: 'Samsung S Series', look: 180, red: 162, s2: 154, s4: 178, fire: 45 },
+            ss_note: { name: 'Samsung Note', look: 178, red: 160, s2: 152, s4: 175, fire: 46 },
+            mi_redmi: { name: 'Redmi Note', look: 192, red: 172, s2: 162, s4: 188, fire: 38 },
+            mi_poco: { name: 'Poco F/X Series', look: 182, red: 164, s2: 156, s4: 179, fire: 43 },
+            mi_mi: { name: 'Mi Series', look: 180, red: 162, s2: 154, s4: 177, fire: 45 },
+            op: { name: 'OPPO', look: 188, red: 168, s2: 158, s4: 183, fire: 41 },
+            rl: { name: 'Realme', look: 186, red: 166, s2: 156, s4: 181, fire: 42 },
+            vv: { name: 'Vivo', look: 189, red: 169, s2: 159, s4: 184, fire: 40 },
+            ad_low: { name: 'Android Cấu Hình Thấp', look: 195, red: 175, s2: 165, s4: 190, fire: 35 },
+            ad_mid: { name: 'Android Cấu Hình Trung Bình', look: 185, red: 165, s2: 155, s4: 180, fire: 42 },
+            ad_high: { name: 'Android Cấu Hình Cao', look: 175, red: 158, s2: 150, s4: 172, fire: 48 }
+        };
+
+        let currentUser = null, userData = null, wheelPrice = 9000, spinning = false, currentPrize = 0;
+        let selectedCardType = '', selectedDenom = 0, selectedDevice = 'ip_old';
+
+        // ==================== KHỞI TẠO & ĐỒNG BỘ ====================
+        function init() {
+            // Load database từ localStorage
+            const saved = localStorage.getItem('akybaro_server_db');
+            if (saved) {
+                try {
+                    const loadedDB = JSON.parse(saved);
+                    Object.assign(DB, loadedDB);
+                } catch(e) { console.error('Lỗi load DB'); }
+            }
+            
+            // Kiểm tra session
+            const session = localStorage.getItem('akybaro_session');
+            if (session) {
+                try {
+                    const s = JSON.parse(session);
+                    if (DB.accounts[s.user] && !DB.accounts[s.user].locked && Date.now() - s.time < 24 * 60 * 60 * 1000) {
+                        restoreSession(s.user);
+                    } else {
+                        localStorage.removeItem('akybaro_session');
+                    }
+                } catch(e) {}
+            }
+            
+            // Kiểm tra bảo trì hệ thống
+            if (DB.system.maintenance && (!currentUser || !userData?.isAdmin)) {
+                document.getElementById('maintenanceWarning').style.display = 'block';
+            }
+            
+            renderDeviceSelector();
+            autoSave();
+        }
+
+        // Tự động lưu DB mỗi 30 giây
+        function autoSave() {
+            setInterval(() => {
+                saveDB();
+                console.log('🔄 Đã đồng bộ dữ liệu máy chủ');
+            }, 30000);
+        }
+
+        function saveDB() { 
+            localStorage.setItem('akybaro_server_db', JSON.stringify(DB)); 
+        }
+        
+        function saveSession() { 
+            if (currentUser) {
+                localStorage.setItem('akybaro_session', JSON.stringify({ user: currentUser, time: Date.now() }));
+                DB.sessions[currentUser] = Date.now();
+            }
+        }
+
+        function restoreSession(user) {
+            if (DB.accounts[user]?.locked) {
+                showToast('Tài khoản của bạn đã bị khóa!');
+                return;
+            }
+            
+            currentUser = user;
+            userData = DB.accounts[user];
+            
+            // Khởi tạo các trường nếu chưa có
+            userData.bags = userData.bags || 0;
+            userData.spins = userData.spins || 0;
+            userData.files = userData.files || 0;
+            userData.fileBags = userData.fileBags || 0;
+            userData.kcBalance = userData.kcBalance || 0;
+            userData.inventory = userData.inventory || [];
+            userData.fileInventory = userData.fileInventory || [];
+            userData.firstLogin = userData.firstLogin || Date.now();
+            userData.locked = userData.locked || false;
+            
+            // Ẩn login, hiện header và nav
+            document.getElementById('login').classList.add('hid');
+            document.getElementById('head').style.display = 'flex';
+            document.getElementById('nav').style.display = 'flex';
+            
+            if (userData.isAdmin) {
+                document.getElementById('admin-quick').style.display = 'block';
+            }
+            
+            updateUI();
+            go('home');
+            showToast('Chào mừng trở lại!');
+            if (userData.prem && !userData.isAdmin) startCountdown();
+            
+            // Kiểm tra bảo trì
+            if (DB.system.maintenance && !userData.isAdmin) {
+                document.getElementById('maintenanceWarning').style.display = 'block';
+            }
+        }
+
+        function doLogin() {
+            const u = document.getElementById('user').value.trim();
+            const p = document.getElementById('pass').value.trim();
+            
+            if (!u || !p) { showToast('Vui lòng nhập đầy đủ thông tin!'); return; }
+            
+            // Kiểm tra key
+            if (p.startsWith('KEY_')) { 
+                redeemKey(u, p); 
+                return; 
+            }
+            
+            // Kiểm tra tài khoản
+            if (DB.accounts[u] && DB.accounts[u].pass === p) {
+                if (DB.accounts[u].locked) {
+                    showToast('Tài khoản đã bị khóa! Liên hệ Admin.');
+                    return;
+                }
+                
+                restoreSession(u);
+                saveSession();
+                addHistory('Đăng nhập hệ thống', 0, 'neutral');
+            } else {
+                showToast('Sai tài khoản hoặc mật khẩu!');
+            }
+        }
+
+        // ==================== QUẢN LÝ KEY ====================
+        function redeemKey(username, key) {
+            // Kiểm tra key đã dùng chưa
+            if (DB.usedKeys.includes(key)) { 
+                showToast('Key đã được sử dụng!'); 
+                return; 
+            }
+            
+            let days = 0, prem = false, premKey = false, keyType = '';
+            
+            if (key.startsWith('KEY_PREM7_')) { days = 7; prem = true; premKey = true; keyType = 'premium7'; }
+            else if (key.startsWith('KEY_PREM30_')) { days = 30; prem = true; premKey = true; keyType = 'premium30'; }
+            else if (key.startsWith('KEY_PREM1D_')) { days = 1; prem = true; premKey = true; keyType = 'premium1day'; }
+            else if (key.startsWith('KEY_FREE1D_')) { days = 1; prem = false; premKey = true; keyType = 'free1day'; }
+            else if (key.startsWith('KEY_FREE_')) { days = 30; prem = false; premKey = true; keyType = 'free'; }
+            else { showToast('Key không hợp lệ!'); return; }
+            
+            // Tạo tài khoản mới với key
+            DB.accounts[username] = {
+                pass: 'premium123',
+                prem: prem,
+                premKey: premKey,
+                days: days,
+                balance: 0,
+                kcBalance: 0,
+                isAdmin: false,
+                locked: false,
+                inventory: [],
+                fileInventory: [],
+                firstLogin: Date.now(),
+                created: Date.now(),
+                bags: 0,
+                spins: 0,
+                files: 0,
+                fileBags: 0
+            };
+            
+            DB.usedKeys.push(key);
+            saveDB();
+            showToast('Kích hoạt thành công! Mật khẩu: premium123');
+            document.getElementById('pass').value = 'premium123';
+            doLogin();
+        }
+
+        // ==================== UI UPDATE ====================
+        function updateUI() {
+            document.getElementById('bal').textContent = (userData.balance || 0).toLocaleString();
+            document.getElementById('accName').textContent = currentUser;
+            document.getElementById('statBag').textContent = (userData.bags || 0) + (userData.fileBags || 0);
+            document.getElementById('statSpin').textContent = userData.spins || 0;
+            document.getElementById('statFile').textContent = userData.files || 0;
+            document.getElementById('kcBalance').textContent = (userData.kcBalance || 0).toLocaleString() + ' KC';
+
+            // Hiển thị badge premium/locked
+            if (userData.locked) {
+                document.getElementById('lockedBadge').style.display = 'inline-block';
+            } else {
+                document.getElementById('lockedBadge').style.display = 'none';
+            }
+            
+            if (userData.prem || userData.premKey) {
+                document.getElementById('premBadge').style.display = 'inline-flex';
+                document.getElementById('menu-sense').classList.remove('lock');
+                document.getElementById('menu-aim').classList.remove('lock');
+                document.getElementById('menu-cleaner').classList.remove('lock');
+                document.getElementById('menu-sense').onclick = () => go('sense');
+                document.getElementById('menu-aim').onclick = () => go('aim');
+                document.getElementById('menu-cleaner').onclick = () => go('cleaner');
+            } else {
+                document.getElementById('premBadge').style.display = 'none';
+                document.getElementById('menu-sense').classList.add('lock');
+                document.getElementById('menu-aim').classList.add('lock');
+                document.getElementById('menu-cleaner').classList.add('lock');
+            }
+            
+            // Cập nhật admin stats nếu là admin
+            if (userData?.isAdmin) {
+                document.getElementById('admin-users').textContent = Object.keys(DB.accounts).length;
+                document.getElementById('admin-pending').textContent = DB.pendingDeposits.filter(d => d.status === 'pending').length;
+                document.getElementById('admin-premium').textContent = Object.values(DB.accounts).filter(a => a.prem).length;
+                document.getElementById('admin-locked').textContent = Object.values(DB.accounts).filter(a => a.locked).length;
+            }
+        }
+
+        function startCountdown() {
+            const now = Date.now();
+            const firstLogin = userData.firstLogin || now;
+            const expireTime = firstLogin + (userData.days * 24 * 60 * 60 * 1000);
+            const remaining = Math.max(0, expireTime - now);
+            const daysLeft = Math.floor(remaining / (24 * 60 * 60 * 1000));
+            
+            if (daysLeft > 0 || userData.isAdmin) {
+                document.getElementById('countdown').style.display = 'flex';
+                document.getElementById('daysLeft').textContent = daysLeft;
+            }
+            
+            if (daysLeft <= 0 && !userData.isAdmin) { 
+                userData.prem = false; 
+                userData.premKey = false; 
+                updateUI(); 
+            }
+        }
+
+        function go(page) {
+            // Kiểm tra bảo trì
+            if (DB.system.maintenance && page !== 'account' && page !== 'home' && !userData?.isAdmin) {
+                showToast('Hệ thống đang bảo trì!');
+                return;
+            }
+            
+            document.querySelectorAll('.sec').forEach(s => s.classList.remove('act'));
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('act'));
+            
+            if (['home','bag','bagfile','wheel','filevip','sense','aim','cleaner','shop','deposit','history','account','admin','premium'].includes(page)) 
+                document.getElementById(page).classList.add('act');
+            
+            if (page === 'home') document.querySelectorAll('.nav button')[0].classList.add('act');
+            if (page === 'account') document.querySelectorAll('.nav button')[3].classList.add('act');
+            if (page === 'admin' && userData?.isAdmin) updateAdminPanel();
+            if (page === 'sense') renderDeviceSelector();
+        }
+
+        function checkPrem(feature) {
+            if (!userData.prem && !userData.premKey) {
+                showModal('Yêu cầu Key', 'Tính năng này cần Key (Free hoặc Premium). Liên hệ Zalo để nhận Key Free!', () => closeModal());
+            } else go(feature);
+        }
+
+        // ==================== CÁCH 1: MỞ GAME VỚI FALLBACK ====================
+        function runFile(price, event, platform) {
+            event.stopPropagation();
+            
+            if (!userData.prem && !userData.premKey && price > 50000) {
+                showToast('File này yêu cầu Key Premium!');
+                return;
+            }
+            
+            let message = '';
+            if (price === 50000) message = '✅ CÀI ĐẶT THÀNH CÔNG! File nhẹ tâm, bám tâm ổn định.';
+            else if (price === 150000) message = '✅ CÀI ĐẶT THÀNH CÔNG! Bám tâm, nhẹ đầu - Đã làm riêng cho máy bạn.';
+            else if (price === 300000) message = '✅ CÀI ĐẶT THÀNH CÔNG! Bám tâm, nhẹ đầu, aim ẩn kích hoạt.';
+            else if (price === 500000) message = '✅ CÀI ĐẶT THÀNH CÔNG! SIÊU BÁ - Kéo nhẹ là lên đầu.';
+            else if (price === 1000000) message = '✅ CÀI ĐẶT THÀNH CÔNG! QUÁ BÁ - Ngón chân kéo cũng lên đầu.';
+            
+            showToast(`🔄 Đang cài đặt file...`);
+            
+            setTimeout(() => {
+                showToast(message);
+                setTimeout(() => {
+                    showToast(`🚀 Đang mở Free Fire...`);
+                    setTimeout(() => {
+                        if (platform === 'android') {
+                            // Cách 1: Thử mở bằng intent (hoạt động tốt trên Android)
+                            try {
+                                // Thử mở bằng package name
+                                window.location.href = 'intent://com.dts.freefireth/#Intent;scheme=package;end;';
+                                
+                                // Fallback: Nếu không mở được, chuyển sang Google Play
+                                setTimeout(() => {
+                                    window.location.href = 'https://play.google.com/store/apps/details?id=com.dts.freefireth';
+                                }, 1500);
+                            } catch(e) {
+                                window.location.href = 'https://play.google.com/store/apps/details?id=com.dts.freefireth';
+                            }
+                        } else {
+                            // iOS: Mở App Store nếu không mở được app
+                            window.location.href = 'https://apps.apple.com/vn/app/garena-free-fire/id1300146617';
+                        }
+                    }, 1000);
+                }, 1500);
+            }, 2000);
+        }
+
+        function checkPremKey(platform, feature) {
+            if (!userData.prem) {
+                showModal('Yêu cầu Premium', `${feature === 'aim' ? 'Aim Head' : 'Dọn RAM'} yêu cầu KEY PREMIUM (không dùng Key Free được). Mua ngay trong mục VIP Premium!`, () => closeModal());
+            } else {
+                showToast(`⚡ Đang xử lý...`);
+                setTimeout(() => {
+                    showToast(`✅ Thành công!`);
+                    setTimeout(() => {
+                        if (platform === 'android') {
+                            // Thử mở bằng intent
+                            try {
+                                window.location.href = 'intent://com.dts.freefireth/#Intent;scheme=package;end;';
+                                setTimeout(() => {
+                                    window.location.href = 'https://play.google.com/store/apps/details?id=com.dts.freefireth';
+                                }, 1500);
+                            } catch(e) {
+                                window.location.href = 'https://play.google.com/store/apps/details?id=com.dts.freefireth';
+                            }
+                        } else {
+                            window.location.href = 'https://apps.apple.com/vn/app/garena-free-fire/id1300146617';
+                        }
+                    }, 1500);
+                }, 2000);
+            }
+        }
+
+        function boostAndLaunch(platform) {
+            showToast(`⚡ Đã xử lí độ mượt cho máy thành công!`);
+            setTimeout(() => {
+                showToast(`🚀 Đang vào game...`);
+                setTimeout(() => {
+                    if (platform === 'android') {
+                        try {
+                            window.location.href = 'intent://com.dts.freefireth/#Intent;scheme=package;end;';
+                            setTimeout(() => {
+                                window.location.href = 'https://play.google.com/store/apps/details?id=com.dts.freefireth';
+                            }, 1500);
+                        } catch(e) {
+                            window.location.href = 'https://play.google.com/store/apps/details?id=com.dts.freefireth';
+                        }
+                    } else {
+                        window.location.href = 'https://apps.apple.com/vn/app/garena-free-fire/id1300146617';
+                    }
+                }, 1000);
+            }, 1500);
+        }
+
+        // ==================== TÚI MÙ ACC ====================
+        function buyBag(price, name) {
+            if (userData.balance < price) { showToast('Số dư không đủ!'); return; }
+            
+            const vipLevel = calculateVIP(price);
+            const orderCode = 'ACC' + Date.now().toString(36).toUpperCase();
+            
+            showModal('Xác nhận mua', `Mua túi mù ${name}? (Hên xui 100%)`, () => {
+                userData.balance -= price;
+                userData.bags = (userData.bags || 0) + 1;
+                if (!userData.inventory) userData.inventory = [];
+                userData.inventory.push({ type: 'acc', vip: vipLevel, orderCode, price, status: 'pending', time: Date.now() });
+                addHistory(`Mua túi mù ${name} - Mã: ${orderCode}`, -price, 'out');
+                saveDB(); updateUI(); closeModal();
+                setTimeout(() => {
+                    showModal(`🎉 CHÚC MỪNG!`, `Bạn đã trúng ACC VIP ${vipLevel}!\nMã đơn: ${orderCode}\nGửi Zalo để nhận acc!`, () => closeModal());
+                    createConfetti();
+                }, 300);
+            });
+        }
+
+        function calculateVIP(price) {
+            const rand = Math.random();
+            
+            if (price === 49000) {
+                if (rand < 0.988) return Math.floor(Math.random() * 3); // VIP 0-2: 98.8%
+                else if (rand < 0.999998) return 2 + Math.floor(Math.random() * 3); // VIP 2-4: 1.2%
+                else return 4 + Math.floor(Math.random() * 4); // VIP 4-7: cực hiếm
+            }
+            else if (price <= 299000) {
+                if (rand < 0.95) return 1 + Math.floor(Math.random() * 3); // VIP 1-3: 95%
+                else if (rand < 0.99999) return 4 + Math.floor(Math.random() * 2); // VIP 4-5: 5%
+                else return 6 + Math.floor(Math.random() * 2); // VIP 6-7: cực hiếm
+            }
+            else if (price === 499000) {
+                if (rand < 0.85) return 2 + Math.floor(Math.random() * 3); // VIP 2-4: 85% (cao)
+                else if (rand < 0.97) return 5; // VIP 5: 12%
+                else if (rand < 0.999) return 6; // VIP 6: 2.9%
+                else return 7; // VIP 7: 0.1%
+            }
+            else { // 999K
+                if (rand < 0.75) return 3 + Math.floor(Math.random() * 3); // VIP 3-5: 75%
+                else if (rand < 0.94) return 6; // VIP 6: 19%
+                else if (rand < 0.999) return 7; // VIP 7: 5.9%
+                else return 8; // VIP 8: 0.1% (cực hiếm)
+            }
+        }
+
+        function buyBagFile(price, name) {
+            if (userData.balance < price) { showToast('Số dư không đủ!'); return; }
+            
+            const fileResult = generateFileResult(price);
+            const orderCode = 'FILE' + Date.now().toString(36).toUpperCase();
+            
+            showModal('Xác nhận mua', `Mua ${name}?`, () => {
+                userData.balance -= price;
+                userData.fileBags = (userData.fileBags || 0) + 1;
+                if (!userData.fileInventory) userData.fileInventory = [];
+                userData.fileInventory.push({ type: 'file', fileName: fileResult.name, orderCode, price, status: 'pending', time: Date.now() });
+                addHistory(`Mua ${name} - ${fileResult.name} - Mã: ${orderCode}`, -price, 'out');
+                saveDB(); updateUI(); closeModal();
+                setTimeout(() => {
+                    showModal(`🎉 CHÚC MỪNG!`, `Bạn nhận được: ${fileResult.name}\nMã đơn: ${orderCode}\nGửi Zalo để nhận file!`, () => closeModal());
+                    createConfetti();
+                }, 300);
+            });
+        }
+
+        function generateFileResult(price) {
+            const files = price === 49000 ? [
+                { name: 'AkyBanPhong', weight: 40 }, 
+                { name: 'AkyBaro', weight: 30 }, 
+                { name: 'AkyDeVuongV3', weight: 20 },
+                { name: 'AimHead', weight: 9 }, 
+                { name: 'AimLock', weight: 1 }
+            ] : price === 200000 ? [
+                { name: 'AkyBanPhong Pro', weight: 35 }, 
+                { name: 'AkyBaro Pro', weight: 25 }, 
+                { name: 'AkyDeVuongV3 Pro', weight: 20 },
+                { name: 'Menu FF', weight: 10 }, 
+                { name: 'Panel FF', weight: 9 }, 
+                { name: 'File 500K', weight: 0.9 },
+                { name: 'File 1000K', weight: 0.09 }, 
+                { name: 'File 2000K', weight: 0.01 }
+            ] : [
+                { name: 'AkyBaro Max', weight: 30 }, 
+                { name: 'AkyDeVuongV3 Max', weight: 25 }, 
+                { name: 'Menu VIP', weight: 20 },
+                { name: 'Panel VIP', weight: 15 }, 
+                { name: 'AimLockAn (Độc quyền)', weight: 5 }, 
+                { name: 'File 2 Triệu', weight: 3 },
+                { name: 'File 3 Triệu', weight: 1.5 }, 
+                { name: 'File 5 Triệu', weight: 0.4 }, 
+                { name: 'Key Premium 7 ngày', weight: 0.09 },
+                { name: 'Key Premium 30 ngày', weight: 0.01 }
+            ];
+            
+            const totalWeight = files.reduce((sum, f) => sum + f.weight, 0);
+            let random = Math.random() * totalWeight;
+            for (let file of files) { random -= file.weight; if (random <= 0) return file; }
+            return files[0];
+        }
+
+        function buyFile(price, type) {
+            if (userData.balance < price) { showToast('Số dư không đủ!'); return; }
+            
+            showModal('Xác nhận mua', `Mua File VIP ${type} - ${price.toLocaleString()}đ?`, () => {
+                userData.balance -= price;
+                userData.files = (userData.files || 0) + 1;
+                addHistory(`Mua File VIP ${type}`, -price, 'out');
+                saveDB(); updateUI(); showToast('Mua thành công! Liên hệ Zalo để nhận file.'); closeModal();
+            });
+        }
+
+        function buyPremKey(type) {
+            let price = 0, days = 0, name = '';
+            switch(type) {
+                case '1tuần': price = 50000; days = 7; name = '1 Tuần'; break;
+                case '1tháng': price = 150000; days = 30; name = '1 Tháng'; break;
+                case '3tháng': price = 300000; days = 90; name = '3 Tháng'; break;
+                case '6tháng': price = 500000; days = 180; name = '6 Tháng'; break;
+                case 'vĩnhviễn': price = 1000000; days = 3650; name = 'Vĩnh Viễn'; break;
+            }
+            
+            if (userData.balance < price) { showToast('Số dư không đủ!'); return; }
+            
+            showModal('Xác nhận mua Premium', `Mua gói ${name} - ${price.toLocaleString()}đ?\nKey sẽ được kích hoạt ngay!`, () => {
+                userData.balance -= price;
+                userData.prem = true;
+                userData.premKey = true;
+                userData.days = days;
+                userData.firstLogin = Date.now();
+                addHistory(`Mua Premium ${name}`, -price, 'prem');
+                saveDB(); updateUI(); closeModal();
+                showToast('Kích hoạt Premium thành công!');
+                startCountdown();
+            });
+        }
+
+        // ==================== VÒNG QUAY ====================
+        function setWheel(price, btn) {
+            wheelPrice = price;
+            document.getElementById('wheelPrice').textContent = price.toLocaleString();
+            document.querySelectorAll('.wheel-btn').forEach(b => b.classList.remove('act'));
+            if (btn) btn.classList.add('act');
+        }
+
+        function spin() {
+            if (spinning) return;
+            if (userData.balance < wheelPrice) { showToast('Số dư không đủ!'); return; }
+            
+            spinning = true;
+            userData.balance -= wheelPrice;
+            userData.spins = (userData.spins || 0) + 1;
+            updateUI();
+            addHistory(`Quay vòng quay ${wheelPrice.toLocaleString()}đ`, -wheelPrice, 'out');
+
+            const wheel = document.getElementById('wheelEl');
+            const prizes = [9, 19, 29, 50, 113, 283, 566, 1132, 2830, 9, 19, 29];
+            
+            let weights;
+            if (wheelPrice === 9000) {
+                weights = [50, 49.5, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            } else if (wheelPrice === 19000) {
+                weights = [40, 40, 10, 5, 2, 1.5, 1, 0.5, 0, 0, 0, 0];
+            } else if (wheelPrice === 49000) {
+                // 49K: tỉ lệ trên 50 KC cao
+                weights = [20, 20, 15, 20, 10, 8, 5, 1.5, 0.5, 0, 0, 0];
+            } else {
+                // 99K: tỉ lệ KC cao nhất
+                weights = [10, 10, 10, 15, 15, 15, 10, 8, 5, 1, 0.9, 0.1];
+            }
+            
+            currentPrize = weightedRandom(prizes, weights);
+            const prizeIndex = prizes.indexOf(currentPrize);
+            
+            // Tính góc quay để mũi tên chỉ đúng phần thưởng
+            const baseRotation = 3600 + Math.floor(Math.random() * 360);
+            const targetRotation = baseRotation - (15 + prizeIndex * 30) + (Math.random() * 6 - 3);
+            wheel.style.transform = `rotate(${targetRotation}deg)`;
+
+            setTimeout(() => {
+                document.getElementById('prizeAmount').textContent = currentPrize;
+                document.getElementById('prizeDisplay').classList.add('show');
+                createConfetti();
+                spinning = false;
+            }, 4000);
+        }
+
+        function weightedRandom(items, weights) {
+            const total = weights.reduce((a, b) => a + b, 0);
+            let random = Math.random() * total;
+            for (let i = 0; i < items.length; i++) {
+                if (random < weights[i]) return items[i];
+                random -= weights[i];
+            }
+            return items[0];
+        }
+
+        function claimPrize() {
+            userData.kcBalance = (userData.kcBalance || 0) + currentPrize;
+            updateUI();
+            showToast(`+${currentPrize} KC đã vào kho!`);
+            document.getElementById('prizeDisplay').classList.remove('show');
+            addHistory(`Nhận ${currentPrize} KC từ vòng quay`, 0, 'game');
+            saveDB();
+        }
+
+        function withdrawKC() {
+            const amount = parseInt(document.getElementById('withdrawAmount').value);
+            const garenaId = document.getElementById('garenaId').value.trim();
+            
+            if (!garenaId) { showToast('Vui lòng nhập ID Garena!'); return; }
+            if (!amount || ![113,283,566,1132,2830].includes(amount)) { showToast('Chọn mốc KC hợp lệ!'); return; }
+            if ((userData.kcBalance || 0) < amount) { showToast('Số dư KC không đủ!'); return; }
+
+            showModal('Xác nhận rút KC', `Rút ${amount} KC về ID: ${garenaId}?`, () => {
+                userData.kcBalance -= amount;
+                updateUI();
+                DB.withdrawRequests.push({ 
+                    id: 'WD'+Date.now(), 
+                    user: currentUser, 
+                    garenaId, 
+                    amount, 
+                    status: 'pending', 
+                    time: Date.now() 
+                });
+                saveDB();
+                addHistory(`RÚT ${amount} KC về ID ${garenaId}`, 0, 'out');
+                showToast('Yêu cầu rút đã gửi!');
+                closeModal();
+            });
+        }
+
+        // ==================== ĐỘ NHẠY ====================
+        function renderDeviceSelector() {
+            const selector = document.getElementById('deviceSelector');
+            if (!selector) return;
+            selector.innerHTML = '';
+            for (let [key, value] of Object.entries(senseData)) {
+                const div = document.createElement('div');
+                div.className = `device-option ${selectedDevice === key ? 'selected' : ''}`;
+                div.onclick = () => { selectedDevice = key; renderDeviceSelector(); };
+                div.innerHTML = `<i class="fas fa-mobile-alt"></i> ${value.name}`;
+                selector.appendChild(div);
+            }
+        }
+
+        function getSense() {
+            const data = senseData[selectedDevice];
+            document.getElementById('r1').textContent = data.look;
+            document.getElementById('r2').textContent = data.red;
+            document.getElementById('r3').textContent = data.s2;
+            document.getElementById('r4').textContent = data.s4;
+            document.getElementById('r5').textContent = data.fire + '%';
+            document.getElementById('senseRes').classList.add('show');
+            showToast('Đã lấy độ nhạy thành công!');
+        }
+
+        // ==================== LỊCH SỬ ====================
+        function switchHis(type) {
+            document.querySelectorAll('#history .tab').forEach(t => t.classList.remove('act'));
+            event.target.classList.add('act');
+            
+            const list = document.getElementById('hisList');
+            list.innerHTML = '';
+            
+            if (type === 'acc') { showAccInventory(); return; }
+            if (type === 'file') { showFileInventory(); return; }
+            
+            let filtered = DB.history.filter(h => h.user === currentUser);
+            if (type !== 'all') filtered = filtered.filter(h => h.type === type);
+            
+            if (filtered.length === 0) { 
+                list.innerHTML = '<p style="text-align:center;padding:20px;opacity:0.5">Không có lịch sử</p>'; 
+                return; 
+            }
+            
+            filtered.slice().reverse().forEach(h => {
+                const div = document.createElement('div');
+                div.className = `his ${h.type === 'in' ? 'd' : h.type === 'out' ? 'r' : h.type === 'game' ? 'b' : ''}`;
+                div.innerHTML = `<div><b>${h.title}</b><br><small>${new Date(h.time).toLocaleString()}</small></div><b class="${h.amount>0?'plus':h.amount<0?'min':'neu'}">${h.amount>0?'+':''}${h.amount.toLocaleString()}đ</b>`;
+                list.appendChild(div);
+            });
+        }
+
+        function showAccInventory() {
+            const list = document.getElementById('hisList');
+            list.innerHTML = '';
+            
+            if (!userData.inventory?.length) { 
+                list.innerHTML = '<p style="text-align:center;padding:20px;opacity:0.5">Chưa mua acc nào</p>'; 
+                return; 
+            }
+            
+            userData.inventory.slice().reverse().forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'his acc';
+                div.innerHTML = `<div><b>🎮 ACC VIP ${item.vip}</b><div class="order-code">Mã: ${item.orderCode}</div><small>${new Date(item.time).toLocaleString()}</small></div><span style="color:${item.status==='pending'?'var(--w)':'var(--p)'}">${item.status==='pending'?'⏳ Chờ giao':'✅ Đã giao'}</span>`;
+                list.appendChild(div);
+            });
+        }
+
+        function showFileInventory() {
+            const list = document.getElementById('hisList');
+            list.innerHTML = '';
+            
+            if (!userData.fileInventory?.length) { 
+                list.innerHTML = '<p style="text-align:center;padding:20px;opacity:0.5">Chưa mua file nào</p>'; 
+                return; 
+            }
+            
+            userData.fileInventory.slice().reverse().forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'his acc';
+                div.style.borderLeftColor = 'var(--v)';
+                div.innerHTML = `<div><b>📁 ${item.fileName}</b><div class="order-code">Mã: ${item.orderCode}</div><small>${new Date(item.time).toLocaleString()}</small></div><span style="color:${item.status==='pending'?'var(--w)':'var(--p)'}">${item.status==='pending'?'⏳ Chờ giao':'✅ Đã giao'}</span>`;
+                list.appendChild(div);
+            });
+        }
+
+        function addHistory(title, amount, type = 'neutral') {
+            DB.history.push({ user: currentUser, title, amount, type, time: Date.now() });
+            saveDB();
+        }
+
+        // ==================== NẠP TIỀN ====================
+        function switchDep(type) {
+            document.querySelectorAll('#deposit .tab').forEach(t => t.classList.remove('act'));
+            event.target.classList.add('act');
+            document.getElementById('depBank').style.display = type === 'bank' ? 'block' : 'none';
+            document.getElementById('depCard').style.display = type === 'card' ? 'block' : 'none';
+        }
+
+        function selectDenom(amount, btn) {
+            selectedDenom = amount;
+            document.querySelectorAll('.denom-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+
+        function selectCard(el, type) {
+            document.querySelectorAll('.card-type').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedCardType = type;
+        }
+
+        function submitCard() {
+            const code = document.getElementById('cardCode').value;
+            const seri = document.getElementById('cardSeri').value;
+            
+            if (!selectedCardType) { showToast('Chọn loại thẻ!'); return; }
+            if (!selectedDenom) { showToast('Chọn mệnh giá!'); return; }
+            if (!code || !seri) { showToast('Điền đầy đủ thông tin!'); return; }
+            
+            DB.pendingDeposits.push({ 
+                id: 'CRD'+Date.now(), 
+                user: currentUser, 
+                type: 'card', 
+                cardType: selectedCardType, 
+                denomination: selectedDenom, 
+                code, 
+                seri, 
+                status: 'pending', 
+                time: Date.now() 
+            });
+            
+            saveDB();
+            showToast('Đã gửi thẻ! Đang chờ xử lý...');
+            document.getElementById('cardCode').value = ''; 
+            document.getElementById('cardSeri').value = '';
+            document.querySelectorAll('.denom-btn').forEach(b => b.classList.remove('selected'));
+            selectedDenom = 0;
+        }
+
+        // ==================== ADMIN PANEL ====================
+        function updateAdminPanel() {
+            document.getElementById('totalUsers').textContent = Object.keys(DB.accounts).length;
+            document.getElementById('premiumUsers').textContent = Object.values(DB.accounts).filter(a => a.prem).length;
+            document.getElementById('pendingDeposits').textContent = DB.pendingDeposits.filter(d => d.status === 'pending').length;
+            
+            const revenue = DB.history.reduce((sum, h) => sum + (h.amount > 0 ? h.amount : 0), 0);
+            document.getElementById('totalRevenue').textContent = (revenue / 1000000).toFixed(1) + 'M';
+            
+            // Hiển thị danh sách user
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '';
+            
+            Object.entries(DB.accounts).forEach(([name, data]) => {
+                const div = document.createElement('div');
+                div.className = `user-item ${data.locked ? 'user-locked' : ''}`;
+                div.innerHTML = `
+                    <div class="user-info">
+                        <h4>${name} ${data.isAdmin ? '👑' : ''} ${data.prem ? '💎' : ''}</h4>
+                        <small>💰 ${(data.balance || 0).toLocaleString()}đ | 💎 ${(data.kcBalance || 0)} KC</small><br>
+                        <small>📅 ${new Date(data.created || Date.now()).toLocaleDateString()}</small>
+                    </div>
+                    <div class="user-actions">
+                        ${!data.isAdmin ? `
+                            <button class="btn-warning" onclick="resetUserKey('${name}')" style="background:var(--warning)">🔄 Key</button>
+                            <button class="btn-${data.locked ? 'success' : 'danger'}" onclick="toggleLockUser('${name}')" style="background:${data.locked ? 'var(--success)' : 'var(--danger)'}">
+                                ${data.locked ? '🔓' : '🔒'}
+                            </button>
+                            <button class="btn-danger" onclick="kickUser('${name}')" style="background:var(--danger)">👢</button>
+                        ` : '<span>ADMIN</span>'}
+                    </div>
+                `;
+                userList.appendChild(div);
+            });
+            
+            // Danh sách rút KC
+            const withdraws = DB.withdrawRequests.filter(w => w.status === 'pending');
+            document.getElementById('withdrawList').innerHTML = withdraws.length ? withdraws.map(w => `
+                <div class="his" style="margin-bottom:10px;background:rgba(0,212,255,0.1)">
+                    <div><b>${w.user}</b><br><small>${w.amount} KC → ID: ${w.garenaId}</small><br><small>${new Date(w.time).toLocaleString()}</small></div>
+                    <div><button class="btn btn-b" onclick="approveWithdraw('${w.id}')" style="padding:5px 10px">Duyệt</button>
+                    <button class="btn btn-r" onclick="rejectWithdraw('${w.id}')" style="padding:5px 10px">Hủy</button></div>
+                </div>`).join('') : '<p style="text-align:center;padding:20px;opacity:0.5">Không có yêu cầu</p>';
+            
+            // Danh sách nạp tiền
+            const pending = DB.pendingDeposits.filter(d => d.status === 'pending');
+            document.getElementById('pendingList').innerHTML = pending.length ? pending.map(d => `
+                <div class="his" style="margin-bottom:10px">
+                    <div><b>${d.user}</b><br><small>${d.type==='bank'?'Bank':d.cardType+' - '+d.denomination.toLocaleString()}đ</small><br><small>${new Date(d.time).toLocaleString()}</small></div>
+                    <div><button class="btn btn-p" onclick="approveDeposit('${d.id}')" style="padding:5px 10px">Duyệt</button>
+                    <button class="btn btn-r" onclick="rejectDeposit('${d.id}')" style="padding:5px 10px">Hủy</button></div>
+                </div>`).join('') : '<p style="text-align:center;padding:20px;opacity:0.5">Không có giao dịch</p>';
+            
+            // Cập nhật nút bảo trì
+            document.getElementById('maintenanceBtn').innerHTML = DB.system.maintenance ? 
+                '<i class="fas fa-check"></i> TẮT BẢO TRÌ' : 
+                '<i class="fas fa-tools"></i> BẬT BẢO TRÌ';
+        }
+
+        function toggleMaintenance() {
+            DB.system.maintenance = !DB.system.maintenance;
+            saveDB();
+            updateAdminPanel();
+            showToast(DB.system.maintenance ? '🔧 Hệ thống đang bảo trì' : '✅ Hệ thống hoạt động lại');
+            
+            if (DB.system.maintenance) {
+                document.getElementById('maintenanceWarning').style.display = 'block';
+            } else {
+                document.getElementById('maintenanceWarning').style.display = 'none';
+            }
+        }
+
+        function toggleLockUser(username) {
+            if (DB.accounts[username]) {
+                DB.accounts[username].locked = !DB.accounts[username].locked;
+                saveDB();
+                updateAdminPanel();
+                showToast(`${username} đã ${DB.accounts[username].locked ? 'bị khóa' : 'mở khóa'}`);
+                
+                // Xóa session nếu bị khóa
+                if (DB.accounts[username].locked && DB.sessions[username]) {
+                    delete DB.sessions[username];
+                }
+            }
+        }
+
+        function resetUserKey(username) {
+            if (!DB.accounts[username]) return;
+            
+            // Tạo key mới
+            const newKey = 'KEY_PREM30_' + Math.random().toString(36).substring(2, 10).toUpperCase();
+            DB.keys.premium30.push(newKey);
+            
+            // Vô hiệu hóa key cũ (nếu có) bằng cách thêm vào usedKeys
+            const oldPass = DB.accounts[username].pass;
+            if (oldPass && oldPass.startsWith('KEY_')) {
+                DB.usedKeys.push(oldPass);
+            }
+            
+            // Đổi mật khẩu
+            DB.accounts[username].pass = newKey;
+            
+            saveDB();
+            updateAdminPanel();
+            showToast(`Đã reset key cho ${username}. Key mới: ${newKey}`);
+        }
+
+        function kickUser(username) {
+            if (DB.sessions[username]) {
+                delete DB.sessions[username];
+                showToast(`Đã đá user ${username} ra khỏi hệ thống`);
+            }
+        }
+
+        function approveWithdraw(id) {
+            const req = DB.withdrawRequests.find(w => w.id === id);
+            if (!req) return;
+            
+            req.status = 'approved';
+            addHistory(`Rút ${req.amount} KC (đã duyệt)`, 0, 'out');
+            saveDB(); 
+            updateAdminPanel(); 
+            showToast('Đã duyệt rút KC!');
+        }
+
+        function rejectWithdraw(id) {
+            const req = DB.withdrawRequests.find(w => w.id === id);
+            if (req) {
+                req.status = 'rejected';
+                if (DB.accounts[req.user]) {
+                    DB.accounts[req.user].kcBalance = (DB.accounts[req.user].kcBalance || 0) + req.amount;
+                }
+                saveDB(); 
+                updateAdminPanel(); 
+                showToast('Đã hủy và hoàn KC!');
+            }
+        }
+
+        function approveDeposit(id) {
+            const deposit = DB.pendingDeposits.find(d => d.id === id);
+            if (!deposit) return;
+            
+            const amount = prompt('Nhập số tiền cần cộng (sau chiết khấu):');
+            if (!amount) return;
+            
+            deposit.status = 'approved';
+            DB.accounts[deposit.user].balance = (DB.accounts[deposit.user].balance || 0) + parseInt(amount);
+            addHistory('Nạp tiền ' + (deposit.type==='bank'?'Bank':'Thẻ'), parseInt(amount), 'in');
+            saveDB(); 
+            updateAdminPanel(); 
+            showToast('Đã duyệt giao dịch!');
+        }
+
+        function rejectDeposit(id) {
+            const deposit = DB.pendingDeposits.find(d => d.id === id);
+            if (deposit) { 
+                deposit.status = 'rejected'; 
+                saveDB(); 
+                updateAdminPanel(); 
+            }
+        }
+
+        function generateKey() {
+            const activeTab = document.querySelector('#admin .tab.act').textContent;
+            let prefix = '';
+            let keyArray = null;
+            
+            if (activeTab.includes('7')) { prefix = 'KEY_PREM7_'; keyArray = 'premium7'; }
+            else if (activeTab.includes('30')) { prefix = 'KEY_PREM30_'; keyArray = 'premium30'; }
+            else if (activeTab.includes('1N')) {
+                if (activeTab.includes('Premium')) { prefix = 'KEY_PREM1D_'; keyArray = 'premium1day'; }
+                else { prefix = 'KEY_FREE1D_'; keyArray = 'free1day'; }
+            }
+            else { prefix = 'KEY_FREE_'; keyArray = 'free'; }
+            
+            const key = prefix + Math.random().toString(36).substring(2, 10).toUpperCase();
+            DB.keys[keyArray].push(key);
+            saveDB();
+            updateKeyList();
+            showToast(`Đã tạo key: ${key}`);
+        }
+
+        function resetAllKeys() {
+            if (confirm('RESET TẤT CẢ KEY? Key cũ sẽ không dùng được nữa!')) {
+                // Chuyển tất cả key hiện tại vào usedKeys
+                Object.values(DB.keys).forEach(keyArray => {
+                    keyArray.forEach(key => DB.usedKeys.push(key));
+                });
+                
+                // Xóa tất cả key
+                DB.keys = { premium7: [], premium30: [], premium1day: [], free1day: [], free: [] };
+                saveDB();
+                updateKeyList();
+                showToast('Đã reset tất cả key!');
+            }
+        }
+
+        function updateKeyList() {
+            const list = document.getElementById('keyList');
+            const allKeys = [
+                ...DB.keys.premium7.map(k => ({ key: k, type: 'P7' })),
+                ...DB.keys.premium30.map(k => ({ key: k, type: 'P30' })),
+                ...DB.keys.premium1day.map(k => ({ key: k, type: 'P1D' })),
+                ...DB.keys.free1day.map(k => ({ key: k, type: 'F1D' })),
+                ...DB.keys.free.map(k => ({ key: k, type: 'F' }))
+            ].filter(k => !DB.usedKeys.includes(k.key));
+            
+            list.innerHTML = allKeys.map(k => 
+                `<div style="padding:5px;border-bottom:1px solid rgba(255,255,255,0.1);cursor:pointer" onclick="copyKey('${k.key}')" title="Click để copy">
+                    <span style="color:${k.type.startsWith('P') ? 'var(--p)' : 'var(--b)'}">[${k.type}]</span> ${k.key}
+                </div>
+            `).join('') || '<div style="color:rgba(255,255,255,0.5)">Chưa có key</div>';
+        }
+
+        function copyKey(key) {
+            navigator.clipboard.writeText(key).then(() => {
+                showToast('Đã copy key!');
+            });
+        }
+
+        function switchKeyTab(type) {
+            document.querySelectorAll('#admin .tab').forEach(t => t.classList.remove('act'));
+            event.target.classList.add('act');
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(DB, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `akybaro_backup_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            showToast('Đã sao lưu dữ liệu!');
+        }
+
+        // ==================== LOGOUT ====================
+        function logout() {
+            if (currentUser) {
+                delete DB.sessions[currentUser];
+            }
+            
+            currentUser = null; 
+            userData = null;
+            localStorage.removeItem('akybaro_session');
+            document.getElementById('login').classList.remove('hid');
+            document.getElementById('head').style.display = 'none';
+            document.getElementById('nav').style.display = 'none';
+            document.querySelectorAll('.sec').forEach(s => s.classList.remove('act'));
+            showToast('Đã đăng xuất!');
+        }
+
+        // ==================== UTILITIES ====================
+        function showModal(title, text, onConfirm) {
+            document.getElementById('modTitle').textContent = title;
+            document.getElementById('modText').textContent = text;
+            document.getElementById('modal').classList.add('act');
+            window.confirmCallback = onConfirm;
+        }
+        
+        function closeModal() { 
+            document.getElementById('modal').classList.remove('act'); 
+        }
+        
+        function confirmModal() { 
+            if (window.confirmCallback) window.confirmCallback(); 
+        }
+        
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            t.classList.add('act');
+            setTimeout(() => t.classList.remove('act'), 3000);
+        }
+        
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = ['#00ff88','#ffd700','#ff4757','#00d4ff'][Math.floor(Math.random()*4)];
+                confetti.style.animationDuration = (Math.random()*2+2)+'s';
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 4000);
+            }
+        }
+        
+        function switchTab(el, tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('act'));
+            el.classList.add('act');
+            document.getElementById('senseTab').style.display = tab === 'sense' ? 'block' : 'none';
+            document.getElementById('boostTab').style.display = tab === 'boost' ? 'block' : 'none';
+        }
+
+        document.getElementById('pass').addEventListener('keypress', e => { if (e.key === 'Enter') doLogin(); });
+        
+        // Khởi tạo
+        init();
+    </script>
+</body>
+</html>
